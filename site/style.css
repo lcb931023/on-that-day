@@ -291,6 +291,21 @@ body {
 .leaflet-control-attribution { background: rgb(242 234 217 / .8) !important; color: var(--ink-soft) !important; font-family: "Newsreader", serif; }
 .leaflet-control-attribution a { color: var(--ink-soft) !important; }
 
+#colophon {
+  position: fixed;
+  left: .9rem; bottom: .6rem;
+  z-index: 1000;
+  font-size: .88rem;
+  font-style: italic;
+  color: var(--ink-soft);
+  background: rgb(242 234 217 / .8);
+  border: 1px solid var(--rule);
+  border-radius: 999px;
+  padding: .18rem .75rem .24rem;
+}
+#colophon a { color: var(--ink); }
+#colophon .heart { color: var(--frank); font-style: normal; }
+
 @media (max-width: 640px) {
   #masthead { flex-direction: column; gap: .3rem; align-items: flex-start; padding: .7rem 1rem; }
   #panel-body { padding: 0 1.3rem 3rem 1.5rem; }
