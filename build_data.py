@@ -95,6 +95,12 @@ AUTHORS = {
         "source": "《胡适留学日记》(1911–1917)",
         "note": "留美时期：康乃尔大学（绮色佳），1915年秋转入哥伦比亚大学（纽约）。",
     },
+    "einstein": {
+        "name": "爱因斯坦", "born": "1879-03-14",
+        "source": "《爱因斯坦旅行日记》(泽夫·罗森克兰茨编，中译本)",
+        "note": "1922年10月—1923年3月的远东与中东之旅，途经锡兰、新加坡、香港、"
+                "上海、日本、巴勒斯坦与西班牙；每篇日记都写于旅途中的不同地点。",
+    },
 }
 
 FILES = {
@@ -107,6 +113,7 @@ FILES = {
     "hillesum": TXT / "Hillesum, Etty/Interrupted Life - Etty Hillesum/Interrupted Life - Etty Hillesum - Etty Hillesum.txt",
     "jixianlin": TXT / "季羡林/清华园日记(季羡林作品珍藏本)(图文版)/清华园日记(季羡林作品珍藏本)(图文版) - 季羡林.txt",
     "hushi": TXT / "胡适/胡适留学日记全集套装17册 (胡适经典全集)/胡适留学日记全集套装17册 (胡适经典全集) - 胡适.txt",
+    "einstein": TXT / "阿尔伯特·爱因斯坦 & 泽夫·罗森克兰茨/爱因斯坦旅行日记（作为世俗游客的爱因斯坦，他的所见所思与你我的异同！）/爱因斯坦旅行日记（作为世俗游客的爱因斯坦，他的所见所思与你我的异同！） - 阿尔伯特·爱因斯坦 & 泽夫·罗森克兰茨.txt",
 }
 
 
@@ -217,9 +224,83 @@ def hushi_place(y, m, d):
     return ("哥伦比亚大学，纽约", 40.8075, -73.9626)
 
 
+# Einstein's 1922–23 voyage, reconstructed from the book's own 行程年表:
+# each row is the leg starting on that date (months 10–12 → 1922, 1–3 → 1923).
+EINSTEIN_ITINERARY = [
+    ((10, 6), "马赛", 43.2965, 5.3698),
+    ((10, 9), "地中海海上", 37.5, 15.5),
+    ((10, 13), "塞得港", 31.2653, 32.3019),
+    ((10, 14), "苏伊士运河", 30.59, 32.27),
+    ((10, 15), "红海海上", 20.0, 38.5),
+    ((10, 19), "阿拉伯海上", 12.0, 55.0),
+    ((10, 25), "印度洋上", 4.2, 73.0),
+    ((10, 28), "科伦坡，锡兰", 6.9271, 79.8612),
+    ((10, 31), "马六甲海峡上", 3.4, 99.0),
+    ((11, 2), "新加坡", 1.3521, 103.8198),
+    ((11, 4), "南海海上", 10.0, 111.5),
+    ((11, 9), "香港", 22.3193, 114.1694),
+    ((11, 11), "东海海上", 26.5, 121.5),
+    ((11, 13), "上海", 31.2304, 121.4737),
+    ((11, 15), "东海海上", 30.0, 124.5),
+    ((11, 17), "神户", 34.6901, 135.1956),
+    ((11, 18), "京都", 35.0116, 135.7681),
+    ((11, 19), "东京", 35.6762, 139.6503),
+    ((12, 3), "仙台", 38.2682, 140.8694),
+    ((12, 4), "日光", 36.7199, 139.6982),
+    ((12, 7), "名古屋", 35.1815, 136.9066),
+    ((12, 10), "京都", 35.0116, 135.7681),
+    ((12, 11), "大阪", 34.6937, 135.5023),
+    ((12, 12), "京都", 35.0116, 135.7681),
+    ((12, 13), "神户", 34.6901, 135.1956),
+    ((12, 15), "京都", 35.0116, 135.7681),
+    ((12, 18), "奈良", 34.6851, 135.8048),
+    ((12, 19), "宫岛", 34.2966, 132.3199),
+    ((12, 23), "门司", 33.9460, 130.9614),
+    ((12, 24), "福冈", 33.5904, 130.4017),
+    ((12, 26), "门司", 33.9460, 130.9614),
+    ((12, 29), "东海海上", 30.0, 126.0),
+    ((12, 31), "上海", 31.2304, 121.4737),
+    ((1, 3), "南海海上", 19.0, 114.5),
+    ((1, 5), "香港", 22.3193, 114.1694),
+    ((1, 7), "南海海上", 8.0, 108.0),
+    ((1, 10), "新加坡", 1.3521, 103.8198),
+    ((1, 13), "马六甲", 2.1896, 102.2501),
+    ((1, 14), "槟城", 5.4141, 100.3288),
+    ((1, 15), "科伦坡，锡兰", 6.9271, 79.8612),
+    ((1, 17), "阿拉伯海上", 8.0, 63.0),
+    ((1, 27), "红海海上", 20.0, 38.5),
+    ((1, 31), "苏伊士", 29.9668, 32.5498),
+    ((2, 1), "塞得港", 31.2653, 32.3019),
+    ((2, 2), "耶路撒冷", 31.7683, 35.2137),
+    ((2, 8), "特拉维夫", 32.0853, 34.7818),
+    ((2, 9), "海法", 32.7940, 34.9896),
+    ((2, 12), "加利利海，太巴列", 32.7940, 35.5300),
+    ((2, 13), "耶路撒冷", 31.7683, 35.2137),
+    ((2, 14), "坎塔拉，埃及", 30.8546, 32.3179),
+    ((2, 16), "地中海海上", 34.5, 22.0),
+    ((2, 22), "巴塞罗那", 41.3874, 2.1686),
+    ((3, 1), "马德里", 40.4168, -3.7038),
+    ((3, 12), "萨拉戈萨", 41.6488, -0.8891),
+]
+
+
+def einstein_seq(m, d):
+    """Order dates along the voyage: Oct 1922 sorts before Jan 1923."""
+    return (m + 12 if m < 10 else m, d)
+
+
+def einstein_place(y, m, d):
+    place = EINSTEIN_ITINERARY[0][1:]
+    for (im, id_), name, lat, lng in EINSTEIN_ITINERARY:
+        if einstein_seq(im, id_) <= einstein_seq(m, d):
+            place = (name, lat, lng)
+    return place
+
+
 PLACE_FN = {"woolf": woolf_place, "kafka": kafka_place, "frank": frank_place,
             "pepys": pepys_place, "eno": eno_place, "hillesum": hillesum_place,
-            "luxun": luxun_place, "jixianlin": jixianlin_place, "hushi": hushi_place}
+            "luxun": luxun_place, "jixianlin": jixianlin_place, "hushi": hushi_place,
+            "einstein": einstein_place}
 
 
 # ---------- Parsers (each returns [{y, m, d, text, (place)}]) ----------
@@ -587,6 +668,40 @@ def parse_hushi(lines):
     return out
 
 
+def parse_einstein(lines):
+    # Diary entries look like "10月6日。text…" and sit between the
+    # "旅行日记　远东…" heading and the "其他文件选" appendix; the book's
+    # 行程年表 uses a full-width space ("12月29日　…") so it never matches.
+    header = re.compile(r"^(\d{1,2})月(\d{1,2})日。\s*(.*)$")
+    in_diary = False
+    current, out = None, []
+    for line in lines:
+        s = line.strip()
+        if s.startswith("旅行日记　"):
+            in_diary = True
+            continue
+        if s == "其他文件选":
+            break
+        m = header.match(s) if in_diary else None
+        if m:
+            if current:
+                out.append(current)
+            month = int(m.group(1))
+            current = {"y": 1922 if month >= 10 else 1923, "m": month,
+                       "d": int(m.group(2)), "text": m.group(3) + "\n"}
+        elif current:
+            current["text"] += line
+    if current:
+        out.append(current)
+    # Footnote markers sit as bare digits after sentence-ending punctuation
+    # ("……讨人喜爱。62街上……"). Digits starting a date/count ("1922年") are
+    # kept by excluding counter characters after the digits.
+    for e in out:
+        e["text"] = re.sub(
+            r"(?<=[。！？）”])\d{1,3}(?=[^\d年月日点时分万千百十亿])", "", e["text"])
+    return out
+
+
 # ---------- Build ----------
 
 def valid_date(y, m, d):
@@ -651,12 +766,14 @@ def main():
         "luxun": parse_luxun(sorted(RAW.glob("luxun_[0-9]*.html"))),
         "jixianlin": parse_jixianlin(FILES["jixianlin"].read_text().splitlines(keepends=True)),
         "hushi": parse_hushi(FILES["hushi"].read_text().splitlines(keepends=True)),
+        "einstein": parse_einstein(FILES["einstein"].read_text().splitlines(keepends=True)),
     }
     entries, seen = [], {}
     for author, items in parsed.items():
         for e in items:
             text = clean(e["text"])
-            min_len = 10 if author == "luxun" else 40   # 鲁迅's entries are terse
+            # 鲁迅 and Einstein wrote terse CJK entries; 40 chars would drop them
+            min_len = 10 if author in ("luxun", "einstein") else 40
             if len(text) < min_len or not valid_date(e["y"], e["m"], e["d"]):
                 continue
             key = (author, e["y"], e["m"], e["d"])
