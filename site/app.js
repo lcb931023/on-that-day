@@ -2,11 +2,12 @@ const COLORS = {
   woolf: "#6d597a", kafka: "#355070", frank: "#b05642", pepys: "#8c6239",
   eno: "#4f7d5d", warhol: "#bb4d79", hillesum: "#a8833c", luxun: "#3f3b34",
   jixianlin: "#6b7f3a", hushi: "#33777c", einstein: "#5661b3",
+  darwin: "#3d7a99",
 };
 const INITIALS = {
   woolf: "VW", kafka: "FK", frank: "AF", pepys: "SP", eno: "BE",
   warhol: "AW", hillesum: "EH", luxun: "鲁", jixianlin: "季", hushi: "胡",
-  einstein: "AE",
+  einstein: "AE", darwin: "CD",
 };
 const MONTH_NAMES = ["January", "February", "March", "April", "May", "June",
   "July", "August", "September", "October", "November", "December"];
@@ -195,7 +196,7 @@ function openPanel(gi, ei) {
       <div class="pn-text">${paragraphs}</div>
       <div class="pn-otd">
         <h3>Meanwhile, in the world</h3>
-        <div class="pn-otd-sub">Wikipedia's record of ${e.d} ${MONTH_NAMES[e.m - 1]}</div>
+        <div class="pn-otd-sub">The days leading up to ${e.d} ${MONTH_NAMES[e.m - 1]}, ${e.y}</div>
         <div id="otd-items" class="otd-muted">Consulting the archives…</div>
       </div>
     </div>`;
@@ -206,37 +207,46 @@ function openPanel(gi, ei) {
   loadOnThisDay(e);
 }
 
+const OTD_WINDOW_DAYS = 14; // span of days before an entry to gather world events from
+
 const otdCache = new Map();
-async function loadOnThisDay(e) {
-  const key = `${e.m}-${e.d}`;
-  try {
-    if (!otdCache.has(key)) {
-      const mm = String(e.m).padStart(2, "0"), dd = String(e.d).padStart(2, "0");
+async function fetchOtdDay(m, d) {
+  const key = `${m}-${d}`;
+  if (!otdCache.has(key)) {
+    try {
+      const mm = String(m).padStart(2, "0"), dd = String(d).padStart(2, "0");
       const res = await fetch(`https://en.wikipedia.org/api/rest_v1/feed/onthisday/events/${mm}/${dd}`);
       otdCache.set(key, (await res.json()).events || []);
+    } catch {
+      otdCache.set(key, []);
     }
-  } catch {
-    otdCache.set(key, []);
   }
-  const events = otdCache.get(key);
+  return otdCache.get(key);
+}
+
+async function loadOnThisDay(e) {
+  // Walk backward from the entry date to list the calendar days leading up to it
+  const days = [];
+  for (let i = OTD_WINDOW_DAYS; i >= 0; i--) {
+    const d = new Date(e.y, e.m - 1, e.d - i);
+    days.push([d.getMonth() + 1, d.getDate()]);
+  }
+  // Keep only events from the entry's own year, so the run-up is contemporaneous
+  const perDay = await Promise.all(days.map(([m, d]) =>
+    fetchOtdDay(m, d).then((evs) =>
+      evs.filter((ev) => ev.year === e.y).map((ev) => ({ m, d, text: ev.text })))));
+
   const el = document.getElementById("otd-items");
   if (!el) return;
-
-  const sameYear = events.filter((ev) => ev.year === e.y);
-  // If nothing happened that exact year, show the closest years around it
-  const shown = (sameYear.length ? sameYear :
-    [...events].sort((x, y) => Math.abs(x.year - e.y) - Math.abs(y.year - e.y)).slice(0, 4))
-    .slice(0, 6);
+  const shown = perDay.flat().slice(-6); // the days nearest the entry, kept in date order
 
   if (!shown.length) {
-    el.innerHTML = `<div class="otd-muted">The archives are silent for this day.</div>`;
+    el.innerHTML = `<div class="otd-muted">The archives are silent for the days before this.</div>`;
     return;
   }
-  const note = sameYear.length ? "" :
-    `<div class="otd-muted" style="padding:.4rem 0">Nothing recorded for ${e.y} itself — nearby years:</div>`;
   el.classList.remove("otd-muted");
-  el.innerHTML = note + shown.map((ev) =>
-    `<div class="otd-item"><span class="otd-year">${ev.year}</span><span>${esc(ev.text)}</span></div>`
+  el.innerHTML = shown.map((ev) =>
+    `<div class="otd-item"><span class="otd-year">${ev.d} ${MONTH_NAMES[ev.m - 1].slice(0, 3)}</span><span>${esc(ev.text)}</span></div>`
   ).join("");
 }
 
