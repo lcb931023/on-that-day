@@ -1,13 +1,19 @@
-"""Parse the diaries in diaries_txt/ and raw/ into site/data/diaries.json."""
+"""Parse the diaries in diaries_txt/ and raw/ into per-day shards under
+site/data/: authors.json plus days/MM-DD.json for each calendar day, each
+holding the entries to show that day (exact date matches per author, else
+the nearest entries within FALLBACK_WINDOW days, carrying their distance
+as "delta")."""
 import html as htmllib
 import json
 import re
+from datetime import date, timedelta
 from pathlib import Path
 
 BASE = Path(__file__).parent
 TXT = BASE / "diaries_txt"
 RAW = BASE / "raw"
-OUT = BASE / "site" / "data" / "diaries.json"
+DATA_DIR = BASE / "site" / "data"
+FALLBACK_WINDOW = 10
 
 MONTHS = {m[:3].lower(): i + 1 for i, m in enumerate(
     ["January", "February", "March", "April", "May", "June",
@@ -585,11 +591,49 @@ def parse_hushi(lines):
 
 def valid_date(y, m, d):
     try:
-        from datetime import date
         date(y, m, d)
         return True
     except ValueError:
         return False
+
+
+def day_delta(m1, d1, m2, d2):
+    """Distance in days between two month/days, wrapping around the year end
+    (computed in leap year 2000 so Feb 29 exists)."""
+    diff = abs((date(2000, m1, d1) - date(2000, m2, d2)).days)
+    return min(diff, 366 - diff)
+
+
+def write_shards(entries):
+    """One file per calendar day with each author's picks for that day."""
+    days_dir = DATA_DIR / "days"
+    days_dir.mkdir(parents=True, exist_ok=True)
+    for old in days_dir.glob("*.json"):
+        old.unlink()
+    authors_present = sorted({e["a"] for e in entries}, key=list(AUTHORS).index)
+    total = 0
+    day = date(2000, 1, 1)
+    while day.year == 2000:
+        m, d = day.month, day.day
+        picked = []
+        for author in authors_present:
+            mine = [(day_delta(e["m"], e["d"], m, d), e) for e in entries
+                    if e["a"] == author]
+            best = min(delta for delta, _ in mine)
+            if best <= FALLBACK_WINDOW:
+                picked.extend(
+                    dict(e, delta=best) if best else e
+                    for delta, e in sorted(mine, key=lambda x: x[1]["y"])
+                    if delta == best)
+        shard = days_dir / f"{m:02d}-{d:02d}.json"
+        shard.write_text(json.dumps({"entries": picked}, ensure_ascii=False))
+        total += shard.stat().st_size
+        day += timedelta(days=1)
+    (DATA_DIR / "authors.json").write_text(
+        json.dumps(AUTHORS, ensure_ascii=False))
+    print(f"wrote {DATA_DIR}/authors.json and 366 day shards "
+          f"({total // 1024 // 1024} MB total, "
+          f"~{total // 366 // 1024} KB each)")
 
 
 def main():
@@ -626,10 +670,7 @@ def main():
         years = sorted({x["y"] for x in entries if x["a"] == author})
         n = sum(1 for x in entries if x["a"] == author)
         print(f"{author}: {n} entries, {years[0]}–{years[-1]}")
-    OUT.parent.mkdir(parents=True, exist_ok=True)
-    OUT.write_text(json.dumps({"authors": AUTHORS, "entries": entries},
-                              ensure_ascii=False))
-    print(f"wrote {OUT} ({OUT.stat().st_size // 1024} KB)")
+    write_shards(entries)
 
 
 if __name__ == "__main__":

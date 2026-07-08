@@ -7,8 +7,6 @@ const INITIALS = {
   woolf: "VW", kafka: "FK", frank: "AF", pepys: "SP", eno: "BE",
   warhol: "AW", hillesum: "EH", luxun: "鲁", jixianlin: "季", hushi: "胡",
 };
-const FALLBACK_WINDOW = 10;   // days to search around today when no exact match
-
 const MONTH_NAMES = ["January", "February", "March", "April", "May", "June",
   "July", "August", "September", "October", "November", "December"];
 
@@ -22,13 +20,6 @@ function targetDate() {
   if (m) return { m: +m[1], d: +m[2] };
   const now = new Date();
   return { m: now.getMonth() + 1, d: now.getDate() };
-}
-
-// Distance in days between two month/days, wrapping around the year end
-function dayDelta(m1, d1, m2, d2) {
-  const doy = (m, d) => Math.floor((Date.UTC(2001, m - 1, d) - Date.UTC(2001, 0, 1)) / 864e5);
-  const diff = Math.abs(doy(m1, d1) - doy(m2, d2));
-  return Math.min(diff, 365 - diff);
 }
 
 function ageOn(bornIso, y, m, d) {
@@ -46,22 +37,6 @@ function yearsAgo(y) {
   return new Date().getFullYear() - y;
 }
 
-// Pick, per author, every entry matching today's month/day; if none,
-// the closest entries within FALLBACK_WINDOW days.
-function pickEntries(entries, target) {
-  const picked = [];
-  for (const author of Object.keys(COLORS)) {
-    const mine = entries.filter((e) => e.a === author)
-      .map((e) => ({ ...e, delta: dayDelta(e.m, e.d, target.m, target.d) }));
-    const best = Math.min(...mine.map((e) => e.delta));
-    if (best <= FALLBACK_WINDOW) {
-      picked.push(...mine.filter((e) => e.delta === best)
-        .sort((a, b) => a.y - b.y));
-    }
-  }
-  return picked;
-}
-
 function groupByPlace(picked) {
   const groups = new Map();
   for (const e of picked) {
@@ -76,8 +51,14 @@ let DATA, TARGET, GROUPS, MAP;
 
 async function init() {
   TARGET = targetDate();
-  DATA = await (await fetch("data/diaries.json")).json();
-  GROUPS = groupByPlace(pickEntries(DATA.entries, TARGET));
+  // per-day shards precomputed by build_data.py, incl. the nearest-entry fallback
+  const shardName = `${String(TARGET.m).padStart(2, "0")}-${String(TARGET.d).padStart(2, "0")}`;
+  const [authors, day] = await Promise.all([
+    fetch("data/authors.json").then((r) => r.json()),
+    fetch(`data/days/${shardName}.json`).then((r) => r.json()),
+  ]);
+  DATA = { authors };
+  GROUPS = groupByPlace(day.entries);
 
   $("#masthead-date").textContent =
     `${TARGET.d} ${MONTH_NAMES[TARGET.m - 1]} — the same day, decades ago`;

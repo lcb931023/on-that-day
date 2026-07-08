@@ -28,8 +28,11 @@ Preview another date with `?date=MM-DD`, e.g. `http://localhost:8642/?date=3-14`
 Drop diary `.txt` files under `diaries_txt/` and adjust the parsers, then:
 
 ```sh
-python3 build_data.py   # writes site/data/diaries.json
+python3 build_data.py   # writes site/data/authors.json + days/MM-DD.json shards
 ```
+
+The data is sharded by calendar day — the site fetches only today's file
+(~20 KB gzipped), with the nearest-entry fallback precomputed into each shard.
 
 `raw/` holds downloaded sources (Pepys from Project Gutenberg, 鲁迅日记
 volume pages from zh.wikisource.org) so parsing never re-fetches them.
@@ -37,11 +40,11 @@ volume pages from zh.wikisource.org) so parsing never re-fetches them.
 ## Layout
 
 ```
-build_data.py        parsers: diaries_txt/ + raw/ → site/data/diaries.json
+build_data.py        parsers: diaries_txt/ + raw/ → site/data/ shards
 diaries_txt/         ebook .txt sources + covers (not in git — copyrighted)
 raw/                 public-domain downloads (in git)
 site/                the static site; serve this directory
-site/data/           diaries.json (generated but committed) + author images
+site/data/           authors.json + days/MM-DD.json (generated but committed)
 ```
 
 Pushes to `main` deploy `site/` to GitHub Pages
@@ -50,5 +53,7 @@ To change diary content, restore `diaries_txt/` from backup, edit the
 parsers, and rerun `build_data.py` before committing.
 
 If an author has no entry for today's exact date, the nearest entry within
-ten days is shown and labelled as such. Locations are the author's main
-residence per period (see the `*_place` functions in `build_data.py`).
+ten days is shown and labelled as such (precomputed into the shards).
+Locations are the author's main residence per period (see the `*_place`
+functions in `build_data.py`), except Warhol, whose entry headers carry
+his actual location.
