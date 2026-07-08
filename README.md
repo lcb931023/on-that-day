@@ -41,11 +41,13 @@ build_data.py        parsers: diaries_txt/ + raw/ → site/data/diaries.json
 diaries_txt/         ebook .txt sources + covers (not in git — copyrighted)
 raw/                 public-domain downloads (in git)
 site/                the static site; serve this directory
-site/data/           diaries.json (not in git — generated) + author images
+site/data/           diaries.json (generated but committed) + author images
 ```
 
-After cloning, restore `diaries_txt/` from backup and run `build_data.py`
-to regenerate `site/data/diaries.json`.
+Pushes to `main` deploy `site/` to GitHub Pages
+(https://lcb931023.github.io/on-that-day/) via `.github/workflows/pages.yml`.
+To change diary content, restore `diaries_txt/` from backup, edit the
+parsers, and rerun `build_data.py` before committing.
 
 If an author has no entry for today's exact date, the nearest entry within
 ten days is shown and labelled as such. Locations are the author's main
