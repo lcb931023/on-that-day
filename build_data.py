@@ -101,6 +101,13 @@ AUTHORS = {
         "note": "1922年10月—1923年3月的远东与中东之旅，途经锡兰、新加坡、香港、"
                 "上海、日本、巴勒斯坦与西班牙；每篇日记都写于旅途中的不同地点。",
     },
+    "darwin": {
+        "name": "Charles Darwin", "born": "1809-02-12",
+        "source": "A Naturalist's Voyage Round the World (the Beagle journal)",
+        "note": "Kept aboard H.M.S. Beagle, 1832–36; each entry is pinned along "
+                "the voyage's route, from Brazil and Patagonia round to the "
+                "Galapagos, Tahiti, Australia and home.",
+    },
 }
 
 FILES = {
@@ -114,6 +121,7 @@ FILES = {
     "jixianlin": TXT / "季羡林/清华园日记(季羡林作品珍藏本)(图文版)/清华园日记(季羡林作品珍藏本)(图文版) - 季羡林.txt",
     "hushi": TXT / "胡适/胡适留学日记全集套装17册 (胡适经典全集)/胡适留学日记全集套装17册 (胡适经典全集) - 胡适.txt",
     "einstein": TXT / "阿尔伯特·爱因斯坦 & 泽夫·罗森克兰茨/爱因斯坦旅行日记（作为世俗游客的爱因斯坦，他的所见所思与你我的异同！）/爱因斯坦旅行日记（作为世俗游客的爱因斯坦，他的所见所思与你我的异同！） - 阿尔伯特·爱因斯坦 & 泽夫·罗森克兰茨.txt",
+    "darwin": TXT / "Darwin, Charles/Naturalist's Voyage Round the World, A/Naturalist's Voyage Round the World, A - Charles Darwin.txt",
 }
 
 
@@ -297,10 +305,132 @@ def einstein_place(y, m, d):
     return place
 
 
+# The Beagle's route, keyed by real date: each row is where Darwin was from
+# that day on. Only spans the dated entries of the Journal (it opens at sea
+# after Bahia, March 1832) — the pin follows him around the world.
+DARWIN_ITINERARY = [
+    ((1832, 3, 18), "At sea, off the coast of Brazil", -14.5, -38.0),
+    ((1832, 4, 8), "Riding north toward Cape Frio, Brazil", -22.75, -42.5),
+    ((1832, 4, 13), "Socêgo, on the Rio Macaé, Brazil", -22.32, -41.92),
+    ((1832, 4, 19), "Returning to Rio de Janeiro", -22.75, -42.5),
+    ((1832, 7, 26), "Monte Video", -34.9011, -56.1645),
+    ((1832, 12, 20), "Good Success Bay, Tierra del Fuego", -54.80, -65.22),
+    ((1832, 12, 25), "Wigwam Cove, near Cape Horn", -55.85, -67.50),
+    ((1833, 1, 15), "Goeree Roads, Tierra del Fuego", -55.05, -66.85),
+    ((1833, 1, 19), "Beagle Channel, Tierra del Fuego", -54.88, -68.10),
+    ((1833, 2, 6), "Woollya, Ponsonby Sound", -55.05, -68.15),
+    ((1833, 8, 11), "El Carmen (Patagones), Río Negro", -40.80, -62.98),
+    ((1833, 9, 10), "Crossing the Pampas, near the Sierra Ventana", -38.15, -61.80),
+    ((1833, 9, 16), "Sierra Tapalguen, Argentina", -37.32, -60.02),
+    ((1833, 9, 19), "Guardia del Monte, Argentina", -35.45, -58.80),
+    ((1833, 9, 20), "Buenos Ayres", -34.6037, -58.3816),
+    ((1833, 9, 28), "Luxan, Argentina", -34.57, -59.11),
+    ((1833, 10, 1), "Crossing the Pampas toward St. Fé", -32.90, -60.40),
+    ((1833, 10, 3), "St. Fé, Argentina", -31.63, -60.70),
+    ((1833, 10, 5), "St. Fé Bajada, on the Paraná", -31.73, -60.53),
+    ((1833, 10, 12), "Descending the Río Paraná", -32.50, -60.70),
+    ((1833, 10, 20), "Mouth of the Paraná", -34.00, -58.40),
+    ((1833, 11, 14), "Riding west from Monte Video", -34.60, -56.80),
+    ((1833, 11, 18), "Near Colonia del Sacramiento", -34.35, -57.70),
+    ((1833, 11, 19), "Las Vacas, Banda Oriental", -33.90, -58.35),
+    ((1833, 11, 22), "Mercedes, on the Río Negro", -33.25, -58.03),
+    ((1833, 11, 26), "Riding back to Monte Video", -34.10, -57.00),
+    ((1833, 12, 6), "At sea, leaving the Río Plata", -36.50, -55.50),
+    ((1833, 12, 23), "Port Desire, Patagonia", -47.75, -65.90),
+    ((1834, 1, 9), "Port St. Julian, Patagonia", -49.31, -67.71),
+    ((1834, 3, 16), "East Falkland Island", -51.69, -59.15),
+    ((1834, 4, 13), "Mouth of the Santa Cruz River", -50.13, -68.35),
+    ((1834, 4, 19), "Tracking up the Santa Cruz River", -50.25, -69.20),
+    ((1834, 4, 26), "Upper valley of the Santa Cruz", -50.30, -70.20),
+    ((1834, 4, 29), "Santa Cruz valley, in sight of the Cordillera", -50.35, -70.80),
+    ((1834, 5, 4), "Furthest point up the Santa Cruz", -50.35, -71.20),
+    ((1834, 5, 5), "Descending the Santa Cruz River", -50.20, -69.50),
+    ((1834, 6, 1), "Port Famine, Strait of Magellan", -53.61, -70.93),
+    ((1834, 6, 8), "Strait of Magellan", -53.80, -71.50),
+    ((1834, 6, 9), "Magdalen Channel, Tierra del Fuego", -54.05, -71.20),
+    ((1834, 6, 10), "Entering the open Pacific", -54.20, -73.50),
+    ((1834, 8, 14), "Riding toward Quillota, Chile", -32.88, -71.25),
+    ((1834, 8, 16), "The Bell of Quillota (La Campana)", -32.96, -71.19),
+    ((1834, 8, 18), "Descending toward San Felipe, Chile", -32.83, -70.90),
+    ((1834, 8, 26), "Jajuel, near San Felipe", -32.68, -70.62),
+    ((1834, 8, 27), "Riding toward Santiago", -33.20, -70.70),
+    ((1834, 9, 5), "Crossing the Maipo, central Chile", -33.75, -70.55),
+    ((1834, 9, 6), "Rancagua, Chile", -34.17, -70.74),
+    ((1834, 9, 13), "Baths of Cauquenes, Chile", -34.24, -70.57),
+    ((1834, 9, 19), "Yaquil, near Nancagua, Chile", -34.62, -71.20),
+    ((1834, 9, 22), "Riding back to Valparaiso", -34.20, -71.40),
+    ((1834, 11, 24), "East coast of Chiloe", -42.30, -73.45),
+    ((1834, 11, 30), "Castro, Chiloe", -42.48, -73.76),
+    ((1834, 12, 1), "Island of Lemuy, Chiloe", -42.62, -73.66),
+    ((1834, 12, 6), "Caylen, southern Chiloe", -43.12, -73.60),
+    ((1834, 12, 10), "San Pedro, south of Chiloe", -43.33, -73.75),
+    ((1834, 12, 18), "At sea, off the Chonos Archipelago", -44.50, -74.50),
+    ((1834, 12, 28), "Peninsula of Tres Montes", -46.65, -75.00),
+    ((1835, 1, 7), "Low's Harbour, Chonos Archipelago", -43.90, -73.95),
+    ((1835, 1, 23), "Cucao, west coast of Chiloe", -42.60, -74.00),
+    ((1835, 2, 4), "At sea, leaving Chiloe", -41.00, -73.90),
+    ((1835, 2, 8), "Valdivia, Chile", -39.81, -73.25),
+    ((1835, 3, 4), "Concepcion, Chile", -36.83, -73.05),
+    ((1835, 3, 18), "Leaving Santiago for the Portillo Pass", -33.60, -70.35),
+    ((1835, 3, 19), "Valley of the Maipo, ascending the Andes", -33.75, -70.00),
+    ((1835, 3, 22), "The Portillo Pass, Cordillera", -33.70, -69.60),
+    ((1835, 3, 23), "Eastern slope of the Andes", -33.60, -69.30),
+    ((1835, 3, 27), "Mendoza", -32.89, -68.85),
+    ((1835, 3, 29), "Villa Vicencio, Argentina", -32.53, -69.02),
+    ((1835, 4, 1), "The Uspallata range", -32.60, -69.25),
+    ((1835, 4, 4), "Puente del Inca, Uspallata Pass", -32.83, -69.91),
+    ((1835, 4, 6), "Descending the Aconcagua valley", -32.85, -70.50),
+    ((1835, 4, 28), "Foot of the Bell Mountain, road to Coquimbo", -32.65, -71.20),
+    ((1835, 5, 2), "Quilimari, coast road, Chile", -32.12, -71.47),
+    ((1835, 5, 4), "Turning inland toward Illapel", -31.70, -71.20),
+    ((1835, 5, 14), "Coquimbo, Chile", -29.95, -71.34),
+    ((1835, 5, 21), "Silver-mines of Arqueros", -29.80, -71.07),
+    ((1835, 5, 23), "Valley of Coquimbo", -29.95, -70.90),
+    ((1835, 6, 2), "Coast road toward Guasco", -29.30, -71.30),
+    ((1835, 6, 3), "Carizal, Chile", -28.08, -71.15),
+    ((1835, 6, 8), "Ballenar, valley of Guasco", -28.57, -70.76),
+    ((1835, 6, 11), "Crossing the desert to Copiapó", -28.00, -70.40),
+    ((1835, 6, 26), "Valley of Copiapó", -27.37, -70.33),
+    ((1835, 6, 27), "Ravine of Paypote, the Despoblado", -27.10, -69.70),
+    ((1835, 7, 12), "Iquique, Peru", -20.21, -70.15),
+    ((1835, 7, 19), "Bay of Callao, near Lima", -12.05, -77.14),
+    ((1835, 9, 23), "Charles Island, Galapagos", -1.28, -90.43),
+    ((1835, 9, 29), "Albemarle Island, Galapagos", -0.25, -91.35),
+    ((1835, 10, 8), "James Island, Galapagos", -0.23, -90.72),
+    ((1835, 11, 15), "Matavai Bay, Tahiti", -17.49, -149.49),
+    ((1835, 11, 18), "The mountains of Tahiti", -17.62, -149.50),
+    ((1835, 11, 25), "Matavai Bay, Tahiti", -17.49, -149.49),
+    ((1835, 12, 19), "At sea, approaching New Zealand", -35.00, 173.00),
+    ((1835, 12, 21), "Bay of Islands, New Zealand", -35.26, 174.12),
+    ((1835, 12, 23), "Waimate, New Zealand", -35.31, 173.88),
+    ((1835, 12, 26), "Bay of Islands, New Zealand", -35.26, 174.12),
+    ((1835, 12, 30), "At sea, bound for Australia", -35.50, 172.00),
+    ((1836, 1, 12), "Sydney Cove, Australia", -33.86, 151.21),
+    ((1836, 1, 17), "Crossing the Nepean, Blue Mountains road", -33.75, 150.67),
+    ((1836, 1, 18), "Blackheath, Blue Mountains", -33.63, 150.28),
+    ((1836, 1, 20), "Bathurst, Australia", -33.42, 149.58),
+    ((1836, 1, 22), "Returning to Sydney", -33.60, 150.20),
+    ((1836, 1, 30), "At sea, bound for Hobart Town", -36.50, 152.00),
+    ((1836, 2, 7), "Leaving Hobart Town, Tasmania", -42.88, 147.33),
+    ((1836, 4, 1), "Keeling (Cocos) Islands", -12.12, 96.87),
+    ((1836, 5, 1), "Port Louis, Mauritius", -20.16, 57.50),
+    ((1836, 5, 9), "At sea, bound for the Cape of Good Hope", -25.00, 50.00),
+    ((1836, 8, 6), "Bahia, Brazil", -12.97, -38.51),
+]
+
+
+def darwin_place(y, m, d):
+    place = DARWIN_ITINERARY[0][1:]
+    for when, name, lat, lng in DARWIN_ITINERARY:
+        if when <= (y, m, d):
+            place = (name, lat, lng)
+    return place
+
+
 PLACE_FN = {"woolf": woolf_place, "kafka": kafka_place, "frank": frank_place,
             "pepys": pepys_place, "eno": eno_place, "hillesum": hillesum_place,
             "luxun": luxun_place, "jixianlin": jixianlin_place, "hushi": hushi_place,
-            "einstein": einstein_place}
+            "einstein": einstein_place, "darwin": darwin_place}
 
 
 # ---------- Parsers (each returns [{y, m, d, text, (place)}]) ----------
@@ -702,6 +832,89 @@ def parse_einstein(lines):
     return out
 
 
+# The Journal is arranged by region, not by time: chapters (and the Falklands
+# pages inside chapter IX) jump between the voyage's 1832–33 and 1834–36
+# passes along South America, and only three markers spell out a year. These
+# anchors, keyed by (body chapter, day of the first such marker), re-seed the
+# year — and the month, for bare-day markers after a jump. Verified against
+# the Beagle's documented route.
+DARWIN_ANCHORS = {
+    (4, 11): (1833, None),   # Rio Negro ride: a year after ch. III's Monte Video
+    (9, 16): (1834, 3),      # back to the Falklands (March) after the Santa Cruz trip
+    (10, 20): (1832, None),  # Tierra del Fuego, first arrival, December 1832
+    (11, 1): (1834, None),   # Strait of Magellan, June 1834
+    (17, 23): (1835, 9),     # Charles Island; the Galapagos chapter opens undated
+    (19, 17): (1836, 1),     # Blue Mountains ride, January 1836
+}
+
+# Keep whole paragraphs up to this size: the paragraph after a date marker is
+# the day's narrative, but the essays that often follow it belong to the
+# region, not the day (and would swallow pages — the last entry would take
+# the book's whole closing retrospect).
+DARWIN_MAX_CHARS = 2400
+
+
+def parse_darwin(lines):
+    # Markers head a paragraph: "March 18th.—", "18th and 19th.—" (dated by
+    # the first day), "April 24th,—", "December 10th—", "January 9th, 1834.—".
+    # Bare-day markers inherit the current month; a month stepping backward
+    # means a new year unless a DARWIN_ANCHORS jump says otherwise.
+    marker = re.compile(
+        r"^(?:([A-Z][a-z]+) )?(\d{1,2})(?:st|nd|rd|th|d)"
+        r"(?:,? and \d{1,2}(?:st|nd|rd|th|d))?(?:, (18\d\d))?[.,]?—\s*(.*)$")
+    chapter_hdr = re.compile(r"^CHAPTER [IVX]+$")
+    anchors = dict(DARWIN_ANCHORS)
+    # the contents also list "CHAPTER I…XXI"; the body starts at the second one
+    seen_ch1, in_body, chapter = 0, False, 0
+    year, month = 1832, None
+    current, out = None, []
+    for line in lines:
+        s = line.strip()
+        if chapter_hdr.match(s):
+            if s == "CHAPTER I":
+                seen_ch1 += 1
+                in_body = seen_ch1 >= 2
+                chapter = 1
+            else:
+                chapter += 1
+            if current:
+                out.append(current)
+                current = None   # a new chapter's preamble is not the last entry's text
+            continue
+        if in_body and s == "INDEX":
+            break
+        mk = marker.match(line) if in_body else None
+        if mk and (not mk.group(1) or mk.group(1)[:3].lower() in MONTHS):
+            day = int(mk.group(2))
+            new_month = MONTHS[mk.group(1)[:3].lower()] if mk.group(1) else None
+            anchor = anchors.pop((chapter, day), None)
+            if anchor:
+                year, month = anchor[0], anchor[1] or new_month or month
+            else:
+                if mk.group(3):
+                    year = int(mk.group(3))
+                if new_month:
+                    if not mk.group(3) and month and new_month < month:
+                        year += 1
+                    month = new_month
+            if month:
+                if current:
+                    out.append(current)
+                current = {"y": year, "m": month, "d": day, "text": mk.group(4) + "\n"}
+                continue
+        if current and len(current["text"]) < DARWIN_MAX_CHARS:
+            current["text"] += line
+    if current:
+        out.append(current)
+    # The facsimile flattens superscript footnote digits into the text
+    # ("…its name of Red Sea is derived.8 Their numbers…"): drop digits glued
+    # to a word or its closing punctuation.
+    for e in out:
+        e["text"] = re.sub(r"([a-zé][.,;:!?’”)]{0,2})\d{1,3}(?=[\s—]|$)", r"\1",
+                           e["text"])
+    return out
+
+
 # ---------- Build ----------
 
 def valid_date(y, m, d):
@@ -767,6 +980,7 @@ def main():
         "jixianlin": parse_jixianlin(FILES["jixianlin"].read_text().splitlines(keepends=True)),
         "hushi": parse_hushi(FILES["hushi"].read_text().splitlines(keepends=True)),
         "einstein": parse_einstein(FILES["einstein"].read_text().splitlines(keepends=True)),
+        "darwin": parse_darwin(FILES["darwin"].read_text().splitlines(keepends=True)),
     }
     entries, seen = [], {}
     for author, items in parsed.items():
