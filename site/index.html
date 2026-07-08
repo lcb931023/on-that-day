@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>On That Day — diaries near you</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..700;1,9..144,300..700&family=Newsreader:ital,opsz,wght@0,6..72,300..600;1,6..72,300..600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<link rel="stylesheet" href="style.css?v=2">
+</head>
+<body>
+
+<header id="masthead">
+  <div class="masthead-title">
+    <h1>On That Day</h1>
+    <p id="masthead-date"></p>
+  </div>
+  <nav id="legend"></nav>
+</header>
+
+<div id="map"></div>
+
+<aside id="panel" hidden>
+  <button id="panel-close" aria-label="Close">&times;</button>
+  <div id="panel-body"></div>
+</aside>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="app.js?v=2"></script>
+</body>
+</html>
