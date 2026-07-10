@@ -10,7 +10,8 @@ Currently included: Virginia Woolf (*A Writer's Diary*), Franz Kafka
 Samuel Pepys (Gutenberg #4200, daily 1660–69), Brian Eno (*A Year with
 Swollen Appendices*, 1995), Andy Warhol (*The Andy Warhol Diaries*, with
 per-entry travel locations), Etty Hillesum (*An Interrupted Life* — only the
-~11 explicitly dated entries), 鲁迅 (《鲁迅日记》from Wikisource, 1912–1931,
+~11 explicitly dated entries), Lena Mukhina (*The Diary of Lena Mukhina*,
+a Leningrad schoolgirl's siege diary, 1941–42), 鲁迅 (《鲁迅日记》from Wikisource, 1912–1931,
 following his moves Beijing → 厦门 → 广州 → 上海), 季羡林 (《清华园日记》
 1932–34), and 胡适 (《胡适留学日记》1911–17, Cornell then Columbia).
 

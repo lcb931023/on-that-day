@@ -80,6 +80,13 @@ AUTHORS = {
         "note": "Written in her room on Gabriël Metsustraat, across from the Rijksmuseum, "
                 "a few miles from Anne Frank's hiding place.",
     },
+    "mukhina": {
+        "name": "Lena Mukhina", "born": "1924-11-21",
+        "source": "The Diary of Lena Mukhina (tr. Amanda Love Darragh, 2014)",
+        "note": "A Leningrad schoolgirl's siege diary, kept at her aunt's flat at "
+                "26 Zagorodny Prospekt by the Five Corners; she was evacuated in "
+                "June 1942 and survived the war.",
+    },
     "luxun": {
         "name": "鲁迅", "born": "1881-09-25",
         "source": "《鲁迅日记》(维基文库, 1912–1931)",
@@ -118,6 +125,7 @@ FILES = {
     "eno": TXT / "Brian Eno/Year With Swollen Appendices_ Brian Eno’s Diary, A/Year With Swollen Appendices_ Brian Eno’s Diary, A - Brian Eno.txt",
     "warhol": TXT / "Warhol, Andy/Andy Warhol Diaries, The/Andy Warhol Diaries, The - Andy Warhol.txt",
     "hillesum": TXT / "Hillesum, Etty/Interrupted Life - Etty Hillesum/Interrupted Life - Etty Hillesum - Etty Hillesum.txt",
+    "mukhina": TXT / "Mukhina, Elena/Diary of Lena Mukhina, The/Diary of Lena Mukhina, The - Mukhina, Elena.txt",
     "jixianlin": TXT / "季羡林/清华园日记(季羡林作品珍藏本)(图文版)/清华园日记(季羡林作品珍藏本)(图文版) - 季羡林.txt",
     "hushi": TXT / "胡适/胡适留学日记全集套装17册 (胡适经典全集)/胡适留学日记全集套装17册 (胡适经典全集) - 胡适.txt",
     "einstein": TXT / "阿尔伯特·爱因斯坦 & 泽夫·罗森克兰茨/爱因斯坦旅行日记（作为世俗游客的爱因斯坦，他的所见所思与你我的异同！）/爱因斯坦旅行日记（作为世俗游客的爱因斯坦，他的所见所思与你我的异同！） - 阿尔伯特·爱因斯坦 & 泽夫·罗森克兰茨.txt",
@@ -206,6 +214,10 @@ WARHOL_GAZETTEER = {
 
 def hillesum_place(y, m, d):
     return ("Gabriël Metsustraat 6, Amsterdam", 52.3547, 4.8797)
+
+
+def mukhina_place(y, m, d):
+    return ("26 Zagorodny Prospekt, Leningrad", 59.9252, 30.3409)
 
 
 def luxun_place(y, m, d):
@@ -429,6 +441,7 @@ def darwin_place(y, m, d):
 
 PLACE_FN = {"woolf": woolf_place, "kafka": kafka_place, "frank": frank_place,
             "pepys": pepys_place, "eno": eno_place, "hillesum": hillesum_place,
+            "mukhina": mukhina_place,
             "luxun": luxun_place, "jixianlin": jixianlin_place, "hushi": hushi_place,
             "einstein": einstein_place, "darwin": darwin_place}
 
@@ -655,6 +668,40 @@ def parse_hillesum(lines):
             current["text"] += line
     if current:
         out.append(current)
+    return out
+
+
+def parse_mukhina(lines):
+    # "9 September 1941" headers. The same dates appear first in the table of
+    # contents, so skip everything until the "22 MAY 1941–..." body divider,
+    # and stop at the closing "Endnotes". Endnote reference numbers survive the
+    # epub-to-text conversion glued to the preceding word ("garden13",
+    # "Youth.12"), so strip a 1–3 digit run that trails a letter or its
+    # sentence punctuation.
+    header = re.compile(r"^(\d{1,2}) ([A-Z][a-z]+) (\d{4})$")
+    started = False
+    current, out = None, []
+    for line in lines:
+        s = line.strip()
+        if not started:
+            started = s.startswith("22 MAY 1941")
+            continue
+        m = header.match(s)
+        if m and m.group(2)[:3].lower() in MONTHS:
+            if current:
+                out.append(current)
+            current = {"y": int(m.group(3)), "m": MONTHS[m.group(2)[:3].lower()],
+                       "d": int(m.group(1)), "text": ""}
+        elif s == "Endnotes":
+            break
+        elif current:
+            current["text"] += line
+    if current:
+        out.append(current)
+    for e in out:
+        e["text"] = re.sub(r"\*\*", "", e["text"])
+        e["text"] = re.sub(r"(?<=[A-Za-z][.,])\d{1,3}\b", "", e["text"])
+        e["text"] = re.sub(r"(?<=[A-Za-z])\d{1,3}\b", "", e["text"])
     return out
 
 
@@ -976,6 +1023,7 @@ def main():
         "eno": parse_eno(FILES["eno"].read_text().splitlines(keepends=True)),
         "warhol": parse_warhol(FILES["warhol"].read_text().splitlines(keepends=True)),
         "hillesum": parse_hillesum(FILES["hillesum"].read_text().splitlines(keepends=True)),
+        "mukhina": parse_mukhina(FILES["mukhina"].read_text().splitlines(keepends=True)),
         "luxun": parse_luxun(sorted(RAW.glob("luxun_[0-9]*.html"))),
         "jixianlin": parse_jixianlin(FILES["jixianlin"].read_text().splitlines(keepends=True)),
         "hushi": parse_hushi(FILES["hushi"].read_text().splitlines(keepends=True)),
