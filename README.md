@@ -58,6 +58,8 @@ npm run dev
 
 ## Docker 一键部署
 
+本地构建并启动：
+
 ```bash
 # 构建并启动
 make docker-up
@@ -73,6 +75,92 @@ http://localhost:8080/
 ```
 
 数据会持久化在 Docker volume `app_data` 中。
+
+## GitHub Actions 镜像构建
+
+仓库包含 `.github/workflows/docker.yml`：
+
+- Pull Request：运行 Go 测试、前端构建，并验证 Docker 镜像可构建。
+- Push 到 `main`：构建前后端一体化 Docker 镜像并发布到 GitHub Container Registry。
+- Tags `v*`：发布对应 tag 镜像。
+
+镜像地址：
+
+```text
+ghcr.io/raphaelrong/on-that-day:latest
+ghcr.io/raphaelrong/on-that-day:sha-<commit>
+```
+
+生产服务器可以直接拉取镜像运行：
+
+```bash
+docker compose -f docker-compose.prod.yml pull
+docker compose -f docker-compose.prod.yml up -d
+```
+
+`docker-compose.prod.yml` 默认只绑定 `127.0.0.1:8080`，推荐在同一台机器上用 Caddy、Nginx 或云负载均衡对外提供 HTTPS。
+
+## HTTPS / SSL 证书配置
+
+推荐让反向代理负责 HTTPS，应用容器继续只监听 HTTP `:8080`。
+
+### 方案 A：Caddy 自动申请证书（推荐）
+
+前提：
+
+- 域名 `example.com` 的 DNS A/AAAA 记录指向服务器公网 IP。
+- 服务器开放 80 和 443 端口。
+- `docker-compose.prod.yml` 已启动应用，且应用监听在 `127.0.0.1:8080`。
+
+安装 Caddy 后写入 `/etc/caddy/Caddyfile`：
+
+```caddyfile
+example.com {
+  encode gzip zstd
+  reverse_proxy 127.0.0.1:8080
+}
+```
+
+然后：
+
+```bash
+sudo systemctl reload caddy
+```
+
+Caddy 会自动向 Let's Encrypt 申请、续期并热加载证书。
+
+### 方案 B：Nginx + Certbot
+
+安装 Nginx 和 Certbot 后，先配置 HTTP 反代：
+
+```nginx
+server {
+    listen 80;
+    server_name example.com;
+
+    location / {
+        proxy_pass http://127.0.0.1:8080;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
+```
+
+申请并自动改写 HTTPS 配置：
+
+```bash
+sudo certbot --nginx -d example.com
+```
+
+之后证书会由 Certbot 定时续期。可以用下面命令检查续期：
+
+```bash
+sudo certbot renew --dry-run
+```
+
+如果你已经有商业证书，则将证书和私钥放在服务器上，用 Nginx 的 `ssl_certificate` 与 `ssl_certificate_key` 指向对应文件即可。
 
 ## 本地生产构建验证
 
