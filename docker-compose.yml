@@ -1,0 +1,19 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: on-that-day
+    ports:
+      - "8080:8080"
+    volumes:
+      - app_data:/data
+    environment:
+      - SQLITE_DSN=/data/on-that-day.db
+      - DATA_DIR=/app/data/source
+      - SITE_DIR=/app/frontend/dist
+      - SERVER_ADDR=:8080
+    restart: unless-stopped
+
+volumes:
+  app_data:

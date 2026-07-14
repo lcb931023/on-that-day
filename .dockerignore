@@ -1,0 +1,13 @@
+frontend/node_modules
+frontend/dist
+on-that-day.db
+data/*.db
+data/*.sqlite
+.git
+.gitignore
+*.md
+Makefile
+docker-compose.yml
+Dockerfile
+.env
+.env.example
