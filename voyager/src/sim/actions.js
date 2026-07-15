@@ -127,7 +127,7 @@ export function stepPawn(pawn, world, roster, day, rng) {
   const others = roster.filter((p) => p.alive && p !== pawn);
   let partner = null;
   if (others.length) {
-    const weighted = others.map((p) => ({ p, weight: 0.3 + Math.abs(rel(pawn, p)) + Math.random() * 0.2 }));
+    const weighted = others.map((p) => ({ p, weight: 0.3 + Math.abs(rel(pawn, p)) + rng() * 0.2 }));
     partner = (rng.weighted(weighted.map((w) => ({ weight: w.weight, p: w.p }))) || {}).p || rng.pick(others);
   }
   const cands = candidates(pawn, world, partner, rng);
