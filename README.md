@@ -1,5 +1,15 @@
 # On That Day — Go Backend + React Frontend
 
+Currently included: Virginia Woolf (*A Writer's Diary*), Franz Kafka
+(*The Diaries*, tr. Ross Benjamin), Anne Frank (*The Diary of a Young Girl*),
+Samuel Pepys (Gutenberg #4200, daily 1660–69), Brian Eno (*A Year with
+Swollen Appendices*, 1995), Andy Warhol (*The Andy Warhol Diaries*, with
+per-entry travel locations), Etty Hillesum (*An Interrupted Life* — only the
+~11 explicitly dated entries), Lena Mukhina (*The Diary of Lena Mukhina*,
+a Leningrad schoolgirl's siege diary, 1941–42), 鲁迅 (《鲁迅日记》from Wikisource, 1912–1931,
+following his moves Beijing → 厦门 → 广州 → 上海), 季羡林 (《清华园日记》
+1932–34), and 胡适 (《胡适留学日记》1911–17, Cornell then Columbia).
+
 工程化 Go 后端 + React 前端，替代原 Python 生成的静态 JSON，将日记数据持久化到 SQLite 并通过 HTTP API 提供。支持 Docker 一键部署。
 
 ## 目录结构
@@ -99,68 +109,6 @@ docker compose -f docker-compose.prod.yml up -d
 ```
 
 `docker-compose.prod.yml` 默认只绑定 `127.0.0.1:8080`，推荐在同一台机器上用 Caddy、Nginx 或云负载均衡对外提供 HTTPS。
-
-## HTTPS / SSL 证书配置
-
-推荐让反向代理负责 HTTPS，应用容器继续只监听 HTTP `:8080`。
-
-### 方案 A：Caddy 自动申请证书（推荐）
-
-前提：
-
-- 域名 `example.com` 的 DNS A/AAAA 记录指向服务器公网 IP。
-- 服务器开放 80 和 443 端口。
-- `docker-compose.prod.yml` 已启动应用，且应用监听在 `127.0.0.1:8080`。
-
-安装 Caddy 后写入 `/etc/caddy/Caddyfile`：
-
-```caddyfile
-example.com {
-  encode gzip zstd
-  reverse_proxy 127.0.0.1:8080
-}
-```
-
-然后：
-
-```bash
-sudo systemctl reload caddy
-```
-
-Caddy 会自动向 Let's Encrypt 申请、续期并热加载证书。
-
-### 方案 B：Nginx + Certbot
-
-安装 Nginx 和 Certbot 后，先配置 HTTP 反代：
-
-```nginx
-server {
-    listen 80;
-    server_name example.com;
-
-    location / {
-        proxy_pass http://127.0.0.1:8080;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-    }
-}
-```
-
-申请并自动改写 HTTPS 配置：
-
-```bash
-sudo certbot --nginx -d example.com
-```
-
-之后证书会由 Certbot 定时续期。可以用下面命令检查续期：
-
-```bash
-sudo certbot renew --dry-run
-```
-
-如果你已经有商业证书，则将证书和私钥放在服务器上，用 Nginx 的 `ssl_certificate` 与 `ssl_certificate_key` 指向对应文件即可。
 
 ## 本地生产构建验证
 
