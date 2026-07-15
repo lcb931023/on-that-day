@@ -5,10 +5,11 @@
 // journal — it fills the silences between Cook's lines with emergent shipboard life.
 
 import { VOYAGE } from "../../data/voyage-loader.js";
-import { makeCrew, makePawn, clamp, expireThoughts, addThought, mood } from "./pawns.js";
+import { makeCrew, makePawn, clamp, expireThoughts, addThought, mood, refreshBonds } from "./pawns.js";
 import { stepPawn } from "./actions.js";
 import { stepProvisions, dayRealEvents, gapDays } from "./world.js";
 import { makeStoryteller } from "./storyteller.js";
+import { checkBreaks, checkInspirations } from "./breaks.js";
 import { makeRng, hashSeed } from "../util/rng.js";
 import { longDate, daysBetween } from "../util/dates.js";
 
@@ -84,7 +85,20 @@ export function stepDay(state) {
     provisions: state.provisions, daysAtSea, avgMood, avgHealth });
   for (const inc of incidents) { inc.date = isoDate; inc.incident = true; inc.pcInvolved = inc.actors?.some((a) => a.isPC); }
 
-  // reactive discipline: a brawl under a disciplined captain risks the lash
+  // mental breaks (mood-driven, contagious — see breaks.js) and inspirations fire
+  // after the day's incidents, so e.g. a shipmate's death can tip a bonded mourner
+  // over the edge the same day. Bonds (friendships/feuds) are refreshed last, once
+  // the day's relationship nudges have all landed.
+  const breakEvents = checkBreaks(roster, state.day, rng);
+  const inspireEvents = checkInspirations(roster, state.day, rng);
+  const bondEvents = refreshBonds(roster, state.day);
+  for (const ev of [...breakEvents, ...inspireEvents, ...bondEvents]) {
+    ev.date = isoDate;
+    ev.pcInvolved = ev.actors?.some((a) => a.isPC);
+    if (ev.salience >= 0.4 || ev.pcInvolved) rawEvents.push(ev);
+  }
+
+  // reactive discipline: a brawl (or a berserk break) under a disciplined captain risks the lash
   for (const ev of rawEvents) {
     if (ev.flogRisk && rng.chance(0.5)) {
       const v = ev.hurt || ev.actors[0];

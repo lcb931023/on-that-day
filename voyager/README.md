@@ -10,6 +10,13 @@ and generates artifacts (a ship's newspaper) to send to the players.
 
 This is the **basic MVP**. Parallel branched visions live in `../voyager-iterations/`.
 
+> This branch (`iter/voyager-deepsim`) is **Iteration B — "Deep RimWorld
+> Simulation"**: a richer relationship web (factions, feuds, mentorships), mental
+> breaks that cascade through bonded/faction-mates, inspirations, and a smarter
+> storyteller (wealth/population-intent levers, per-personality pacing cycles,
+> incidents that read the relationship graph — duels, faction friction,
+> reconciliations). See `ITERATION.md` for the full writeup and sample runs.
+
 ## Why it's built this way (the design bet)
 
 Following Tynan Sylvester's *The Simulation Dream*: we simulate the **minimum that
