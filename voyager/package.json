@@ -1,0 +1,13 @@
+{
+  "name": "voyager-mvp",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "AI x human 跑团 voyage engine — emergent shipboard simulation anchored to a real historical voyage, narrated by an LLM, with Blades-in-the-Dark flashbacks and generated newspaper artifacts.",
+  "bin": { "voyager": "src/cli.js" },
+  "scripts": {
+    "sail": "node src/cli.js sail",
+    "gazette": "node src/cli.js gazette",
+    "demo": "node src/cli.js sail --to 1769-06-10 --seed 7 && node src/cli.js gazette --from 1769-04-13 --to 1769-06-10 --seed 7"
+  },
+  "license": "MIT"
+}

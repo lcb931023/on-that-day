@@ -1,0 +1,4 @@
+node_modules/
+output/*.html
+!output/.gitkeep
+.env
