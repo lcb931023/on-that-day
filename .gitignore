@@ -1,6 +1,37 @@
-# copyrighted ebook sources (epub/mobi/txt) — required to rebuild the data
-# (site/data/diaries.json IS committed: GitHub Pages serves it directly)
-diaries_txt/
+# Binaries produced by `go build`
+/server
+/dbsync
+/ingestvoyage
+*.exe
 
-__pycache__/
+# SQLite databases
+*.db
+*.sqlite
+*.sqlite3
+
+# Environment variables (real secrets)
+.env
+
+# Logs
+*.log
+
+# Dependency directories
+frontend/node_modules
+
+# Build output
+frontend/dist
+dist-ssr
+
+# Editor / OS files
 .DS_Store
+.vscode/*
+!.vscode/extensions.json
+.idea
+*.sw?
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+
+# Agent / local tooling
+.codex
