@@ -3,7 +3,9 @@
 // Deliberately small — RimWorld's lesson is to simulate the minimum that supports
 // the stories we want, and let apophenia do the rest.
 
-import { CREW_SEED } from "../../data/voyage-loader.js";
+// Pulled from the pure ../../data/voyage-build.js (not voyage-loader.js) so this
+// module has no Node (fs) dependency and can be imported directly in the browser.
+import { CREW_SEED } from "../../data/voyage-build.js";
 
 // Needs are satisfaction in [0,1] (1 = fully satisfied). Each has a per-day decay
 // and a weight in the mood calculation.

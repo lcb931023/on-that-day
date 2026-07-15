@@ -68,5 +68,6 @@ export async function narrateSpanLLM(records, meta = {}) {
 }
 
 export function useLLM() {
-  return process.env.VOYAGER_LLM === "1" && llmAvailable();
+  const flag = typeof process !== "undefined" && process.env ? process.env.VOYAGER_LLM : undefined;
+  return flag === "1" && llmAvailable();
 }
