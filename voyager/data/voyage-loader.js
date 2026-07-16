@@ -169,3 +169,20 @@ export const CREW_SEED = [
   { name: "Sam Evans", role: "Quartermaster", traits: ["shrewd", "greedy"] },
   { name: "Tom Rossiter", role: "Drummer", traits: ["merry", "loud"] },
 ];
+
+// A handful of historically-plausible starting bonds, seeded so the relationship web
+// (faction cliques, feuds, mentorships) has texture from day one instead of taking a
+// whole voyage to emerge. `rel` is the seeded relationship value; `kind` is the
+// bond label (friend / rival / mentor — protege is inferred automatically for the
+// other side). Everything past this is left to play: bonds escalate into feuds or
+// cool into friendships as the crew actually lives together.
+export const SEED_BONDS = [
+  { a: "Joseph Banks", b: "Dr. Daniel Solander", rel: 0.7, kind: "friend" },       // gentlemen scholars, thick as thieves
+  { a: "Lt. James Cook", b: "Zachary Hicks", rel: 0.35, kind: "mentor" },          // captain grooming his lieutenant
+  { a: "Robert Molyneux", b: "John Ravenhill", rel: 0.5, kind: "friend" },         // drinking companions
+  { a: "Richard Orton", b: "Joseph Banks", rel: -0.5, kind: "rival" },             // the clerk resents the gentleman's privilege
+  { a: "Sam Evans", b: "James Magra", rel: 0.3, kind: "friend" },
+  { a: "Tupaia", b: "Lt. James Cook", rel: 0.4, kind: "mentor" },                  // the navigator-priest, the captain's respect
+  { a: "Jonathan Monkhouse", b: "Nicholas Young", rel: 0.4, kind: "friend" },      // the ship's boys
+  { a: "James Magra", b: "Zachary Hicks", rel: -0.4, kind: "rival" },              // insolent hand vs. dutiful lieutenant
+];

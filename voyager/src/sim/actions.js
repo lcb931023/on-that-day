@@ -24,16 +24,20 @@ function candidates(pawn, world, partner, rng) {
   // --- social, partner-driven ---
   if (partner) {
     const r = rel(pawn, partner);
+    const isFeud = pawn.feuds.has(partner.id);
+    const isMentor = pawn.bond[partner.id]?.kind === "mentor";
     // drink/chat with friends, especially when lonely
     list.push({ kind: "carouse", partner, weight: (0.5 + urgency(n.social)) * (1 + r) + (pawn.fx.drinkMorale ? 0.6 : 0) });
     list.push({ kind: "yarn", partner, weight: (0.4 + urgency(n.social)) * (1 + Math.max(0, r)) });
     list.push({ kind: "gamble", partner, weight: 0.35 * (1 + Math.max(0, r)) });
-    // friction, escalating with grudges and low mood (kept rare so it stays notable)
-    const spite = (pawn.fx.grudge || 0) + (1 - mood(pawn)) * 0.45 - Math.max(0, r) - 0.35;
+    // friction, escalating with grudges, standing feuds, and low mood (kept rare so it stays notable)
+    const spite = (pawn.fx.grudge || 0) + (1 - mood(pawn)) * 0.45 - Math.max(0, r) - 0.35 + (isFeud ? 0.35 : 0);
     if (spite > 0) list.push({ kind: "quarrel", partner, weight: clamp(spite, 0, 1) * 0.5 });
-    if (r < -0.4 && mood(pawn) < 0.4) list.push({ kind: "brawl", partner, weight: clamp(-r, 0, 1) * 0.5 });
-    if (pawn.role === "Navigator-Priest" || pawn.traits.includes("wise"))
-      list.push({ kind: "counsel", partner, weight: 0.4 });
+    if ((r < -0.4 || isFeud) && mood(pawn) < 0.42)
+      list.push({ kind: "brawl", partner, weight: clamp(-r + (isFeud ? 0.3 : 0), 0, 1) * 0.5 });
+    // mentors seek out their protege for counsel more than a generally wise pawn would.
+    if (pawn.role === "Navigator-Priest" || pawn.traits.includes("wise") || isMentor)
+      list.push({ kind: "counsel", partner, weight: isMentor ? 0.7 : 0.4 });
   }
   return list.filter((c) => c.weight > 0.001);
 }
@@ -127,7 +131,15 @@ export function stepPawn(pawn, world, roster, day, rng) {
   const others = roster.filter((p) => p.alive && p !== pawn);
   let partner = null;
   if (others.length) {
-    const weighted = others.map((p) => ({ p, weight: 0.3 + Math.abs(rel(pawn, p)) + rng() * 0.2 }));
+    // crew cluster with their own kind and their bonds — cliques and feuds both keep
+    // pulling the same pairs back together, which is what lets them read as a story.
+    const weighted = others.map((p) => {
+      const bondKind = pawn.bond[p.id]?.kind;
+      const bondBoost = bondKind === "friend" || bondKind === "mentor" || bondKind === "protege" ? 0.4 : 0;
+      const factionBoost = p.faction === pawn.faction ? 0.25 : 0;
+      const feudPull = pawn.feuds.has(p.id) ? 0.3 : 0;
+      return { p, weight: 0.3 + Math.abs(rel(pawn, p)) + bondBoost + factionBoost + feudPull + rng() * 0.2 };
+    });
     partner = (rng.weighted(weighted.map((w) => ({ weight: w.weight, p: w.p }))) || {}).p || rng.pick(others);
   }
   const cands = candidates(pawn, world, partner, rng);
