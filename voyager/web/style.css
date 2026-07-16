@@ -1,0 +1,105 @@
+:root {
+  --ink: #1b1b18;
+  --paper: #f4ecd8;
+  --panel: #fffaf0;
+  --rule: #d9cba4;
+  --accent: #2b5e8c;
+  --pc: #b0651a;
+  --danger: #a3312a;
+  --good: #3c6e3c;
+  color-scheme: light;
+}
+* { box-sizing: border-box; }
+html, body { height: 100%; margin: 0; }
+body {
+  font-family: -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
+  background: #14181d;
+  color: var(--ink);
+}
+#app { height: 100%; display: flex; flex-direction: column; }
+
+#topbar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 8px 14px; background: #0e1116; color: #eee; font-size: 14px;
+  border-bottom: 1px solid #000;
+}
+.brand b { letter-spacing: .3px; }
+.dim { color: #8a8a86; }
+#topbar .dim { color: #9aa0a6; }
+.small { font-size: 12px; }
+
+#layout { flex: 1; display: flex; min-height: 0; }
+#map { flex: 1; min-width: 0; background: #b9d3e0; }
+
+#panel {
+  width: 380px; min-width: 320px; max-width: 42vw;
+  background: var(--paper); border-left: 1px solid #000;
+  overflow-y: auto; padding: 10px; display: flex; flex-direction: column; gap: 10px;
+}
+.card {
+  background: var(--panel); border: 1px solid var(--rule); border-radius: 6px;
+  padding: 10px 12px;
+}
+.card h2 {
+  margin: 0 0 6px; font-size: 13px; text-transform: uppercase; letter-spacing: 1px;
+  color: #6b5a35; border-bottom: 1px solid var(--rule); padding-bottom: 4px;
+}
+.row { display: flex; gap: 6px; margin-bottom: 6px; }
+.row input, .row select {
+  flex: 1; font: inherit; padding: 5px 6px; border: 1px solid #b9a97a; border-radius: 4px; background: #fff;
+}
+button {
+  font: inherit; padding: 6px 10px; border: 1px solid #7a6a3f; border-radius: 4px;
+  background: #efe0b8; cursor: pointer;
+}
+button:hover { background: #e6d29e; }
+button:disabled { opacity: .5; cursor: not-allowed; }
+
+#today-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px; }
+#today-date { font-weight: 700; font-size: 15px; }
+#meters { display: flex; gap: 14px; margin: 4px 0 8px; }
+.meter { flex: 1; font-size: 11px; }
+.meter span { display: block; margin-bottom: 2px; color: #6b5a35; }
+.bar { height: 7px; border-radius: 4px; background: #e5d8b8; overflow: hidden; border: 1px solid #cbb98a; }
+.bar i { display: block; height: 100%; background: var(--accent); }
+#bar-health { background: var(--good); }
+#today-narration { font-size: 13.5px; line-height: 1.55; margin-bottom: 6px; }
+#today-beats .beat, #feed .beat {
+  font-size: 12.5px; padding: 4px 6px; margin-bottom: 4px; border-left: 3px solid var(--rule);
+  background: #f9f2df;
+}
+.beat.incident { border-left-color: var(--danger); }
+.beat.pc { border-left-color: var(--pc); background: #fbe9d3; font-weight: 600; }
+.beat.death { border-left-color: var(--danger); background: #f6dede; color: var(--danger); font-weight: 700; }
+#today-pc { font-size: 12.5px; }
+#today-pc .pc-thread { color: var(--pc); font-weight: 600; margin-top: 4px; }
+
+#feed { display: flex; flex-direction: column-reverse; gap: 6px; max-height: 46vh; overflow-y: auto; }
+#feed .feed-day { border-bottom: 1px dashed var(--rule); padding-bottom: 6px; }
+#feed .feed-date { font-size: 11px; font-weight: 700; color: #6b5a35; margin-bottom: 2px; }
+
+#transport {
+  display: flex; align-items: center; gap: 10px; padding: 8px 14px;
+  background: #0e1116; color: #eee; border-top: 1px solid #000;
+}
+#transport #scrub { flex: 1; }
+#transport select { background: #1c2026; color: #eee; border: 1px solid #333; border-radius: 4px; padding: 3px; }
+#transport button { min-width: 42px; }
+#scrub-label { min-width: 8em; text-align: right; font-size: 12px; }
+
+.ship-marker { font-size: 20px; line-height: 20px; text-align: center; filter: drop-shadow(0 1px 2px rgba(0,0,0,.6)); }
+/* Leaflet positions markers via `transform` on the icon root element itself (not
+   this inner div), so the glide animation has to target that outer element. */
+.leaflet-marker-icon.ship-leaflet-marker { transition: transform .5s linear; }
+
+.modal { position: fixed; inset: 0; background: rgba(0,0,0,.6); display: flex; align-items: center; justify-content: center; z-index: 1000; }
+.modal.hidden { display: none; }
+.modal-inner { position: relative; width: 90vw; height: 88vh; background: #fff; border-radius: 6px; overflow: hidden; }
+.modal-close { position: absolute; top: 8px; right: 8px; z-index: 2; }
+#gazette-frame { width: 100%; height: 100%; border: 0; }
+
+@media (max-width: 820px) {
+  #layout { flex-direction: column; }
+  #panel { width: 100%; max-width: 100%; max-height: 46vh; }
+  #map { min-height: 40vh; }
+}

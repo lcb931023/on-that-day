@@ -4,7 +4,10 @@
 // story the narrator and the artifact generators build on. It never contradicts the
 // journal — it fills the silences between Cook's lines with emergent shipboard life.
 
-import { VOYAGE } from "../../data/voyage-loader.js";
+// NOTE: no top-level import of voyage-loader.js here — that file reads cook.json off
+// disk (node:fs), and this engine must also run unmodified in the browser (see
+// voyager/web/app.js). Callers always pass `voyage` explicitly (cli.js, export.js,
+// and the browser both build it via data/voyage-build.js#buildVoyage).
 import { makeCrew, makePawn, clamp, expireThoughts, addThought, mood, refreshBonds } from "./pawns.js";
 import { stepPawn } from "./actions.js";
 import { stepProvisions, dayRealEvents, gapDays } from "./world.js";
@@ -14,7 +17,8 @@ import { makeRng, hashSeed } from "../util/rng.js";
 import { longDate, daysBetween } from "../util/dates.js";
 import { beatForDate, beatThreatMultiplier } from "../narrate/storycircle.js";
 
-export function createVoyage({ voyage = VOYAGE, seed = 1, personality = "cassandra", pcs = [] } = {}) {
+export function createVoyage({ voyage, seed = 1, personality = "cassandra", pcs = [] } = {}) {
+  if (!voyage) throw new Error("createVoyage: `voyage` is required (see data/voyage-loader.js or voyage-build.js#buildVoyage)");
   const rng = makeRng(typeof seed === "string" ? hashSeed(seed) : seed);
   const roster = makeCrew();
   for (const pc of pcs) roster.push(makePawn({ ...pc, isPC: true }));

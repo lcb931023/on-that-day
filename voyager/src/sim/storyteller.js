@@ -74,7 +74,7 @@ const INCIDENTS = [
         if (c.rng.chance(0.35)) { kill(v, "washed overboard in the gale", c.roster, c.day); casualty = { pawn: v, dead: true }; }
         else { v.needs.health = clamp(v.needs.health - c.rng.range(0.15, 0.35), 0, 1); casualty = { pawn: v, dead: false }; }
       }
-      return { kind: "storm", severity: sev, casualty, salience: 0.7 + sev * 0.2,
+      return { kind: "storm", severity: sev, casualty, actors: casualty ? [casualty.pawn] : [], salience: 0.7 + sev * 0.2,
         summary: casualty ? `A gale off ${c.leg.place} ${casualty.dead ? "took" : "near-drowned"} ${casualty.pawn.name}.`
                           : `A hard blow off ${c.leg.place} kept all hands at the pumps.` };
     },

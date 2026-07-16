@@ -10,7 +10,9 @@
 // a few historically-plausible starting textures and then escalate or heal through
 // play — see `refreshBonds` below and the storyteller's relationship-aware incidents.
 
-import { CREW_SEED, SEED_BONDS } from "../../data/voyage-loader.js";
+// Pulled from the pure ../../data/voyage-build.js (not voyage-loader.js) so this
+// module has no Node (fs) dependency and can be imported directly in the browser.
+import { CREW_SEED, SEED_BONDS } from "../../data/voyage-build.js";
 
 // Needs are satisfaction in [0,1] (1 = fully satisfied). Each has a per-day decay
 // and a weight in the mood calculation.

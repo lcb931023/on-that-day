@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Voyager — Live Voyage Mode (HMS Endeavour, 1768–1771)</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<link rel="stylesheet" href="./style.css" />
+</head>
+<body>
+  <div id="app">
+    <header id="topbar">
+      <div class="brand">⚓ <b>Voyager</b> <span class="dim">— HMS Endeavour, 1768–1771</span></div>
+      <div id="statusline" class="dim">loading…</div>
+    </header>
+
+    <main id="layout">
+      <div id="map"></div>
+
+      <aside id="panel">
+        <section id="pc-form" class="card">
+          <h2>Your character</h2>
+          <p class="dim small">Pick a playbook and set sail — the crew simulation re-runs the whole voyage with your character woven into it, live in this browser.</p>
+          <div class="row">
+            <input id="pc-name" type="text" placeholder="Character name" value="Mary Blackwood" />
+          </div>
+          <div class="row">
+            <select id="pc-playbook"></select>
+            <input id="pc-seed" type="number" value="7" title="Seed" style="width:5.5em" />
+          </div>
+          <div class="row">
+            <button id="pc-sail">⛵ Set sail</button>
+            <button id="pc-gazette" title="Print a Gazette for the days behind the ship">📰 Gazette</button>
+          </div>
+          <div id="pc-note" class="dim small"></div>
+        </section>
+
+        <section id="today" class="card">
+          <div id="today-head">
+            <div id="today-date">—</div>
+            <div id="today-place" class="dim">—</div>
+          </div>
+          <div id="meters">
+            <div class="meter"><span>Mood</span><div class="bar"><i id="bar-mood"></i></div></div>
+            <div class="meter"><span>Health</span><div class="bar"><i id="bar-health"></i></div></div>
+          </div>
+          <div id="today-narration">—</div>
+          <div id="today-beats"></div>
+          <div id="today-pc"></div>
+        </section>
+
+        <section id="feed-wrap" class="card">
+          <h2>Ship's log</h2>
+          <div id="feed"></div>
+        </section>
+      </aside>
+    </main>
+
+    <footer id="transport">
+      <button id="play">▶</button>
+      <input id="scrub" type="range" min="0" max="1" value="0" step="1" />
+      <span id="scrub-label" class="dim">—</span>
+      <select id="speed">
+        <option value="900">1×</option>
+        <option value="450" selected>2×</option>
+        <option value="180">4×</option>
+        <option value="60">8×</option>
+      </select>
+    </footer>
+  </div>
+
+  <div id="gazette-modal" class="modal hidden">
+    <div class="modal-inner">
+      <button id="gazette-close" class="modal-close">✕</button>
+      <iframe id="gazette-frame"></iframe>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script type="module" src="./app.js"></script>
+</body>
+</html>
