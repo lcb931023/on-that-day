@@ -33,6 +33,11 @@ node src/cli.js sail     --to 1769-06-06 --seed 7 --pc "Mary Blackwood:Surgeon"
 node src/cli.js crew     --to 1771-07-10 --seed 7
 node src/cli.js roleplay --to 1769-10-15 --seed 7 --pc "Mary Blackwood:Surgeon"
 node src/cli.js gazette  --from 1769-04-13 --to 1769-06-10 --seed 7   # writes output/*.html
+
+# Iteration C — see ITERATION.md
+node src/cli.js story    --to 1771-07-10 --seed 7 --pc "Mary Blackwood:Surgeon"          # Dan Harmon story-circle chapters
+node src/cli.js session  --to 1769-10-15 --seed 7 --pc "Mary Blackwood:Surgeon" --pc "Tom Ashgrove:Bosun" --auto  # multiplayer scene handoff + flashback
+node src/cli.js schedule --to 1769-06-10 --seed 7 --cadence weekly --now all --emit 3    # dry-run real-time delivery scheduler
 ```
 
 Everything runs **offline** on deterministic templates. For LLM narration add `--llm`
@@ -83,6 +88,20 @@ src/artifacts/
 
 ## Status / next
 
-MVP proves the full loop offline + LLM. Branched iterations explore: a live web
-"Voyager mode" in the existing React app; deeper relationship/mood webs; the Harmon
-story-circle / hero's-journey shaping of narration; scheduled real-time delivery.
+MVP proves the full loop offline + LLM. This branch (`iter/voyager-narrative`) adds
+three threads on top — see `ITERATION.md` for the full writeup:
+
+- **Story circle** (`src/narrate/storycircle.js`, `cli.js story`) — Dan Harmon's
+  eight-beat circle mapped onto real turning points of Cook's voyage; shapes both the
+  narration's register and (optionally) the storyteller's incident odds.
+- **Multiplayer scene handoff + flashback** (`src/ttrpg/session.js`, `cli.js session`)
+  — a table of PCs, a checkpointed handoff, Blades resolution that feeds back into the
+  live sim, and flashbacks with a real mechanical payoff. Interactive in a real
+  terminal, auto-plays offline otherwise.
+- **Scheduled delivery** (`src/artifacts/scheduler.js`, `cli.js schedule`) — a dry-run
+  planner for "the game mails you a newspaper as it happens": regular Gazette digests
+  plus early breaking-news dispatches, fast-forwardable to see what would already have
+  been delivered.
+
+Other branched iterations explore: a live web "Voyager mode" in the existing React app;
+deeper relationship/mood webs.

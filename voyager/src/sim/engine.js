@@ -12,6 +12,7 @@ import { makeStoryteller } from "./storyteller.js";
 import { checkBreaks, checkInspirations } from "./breaks.js";
 import { makeRng, hashSeed } from "../util/rng.js";
 import { longDate, daysBetween } from "../util/dates.js";
+import { beatForDate, beatThreatMultiplier } from "../narrate/storycircle.js";
 
 export function createVoyage({ voyage = VOYAGE, seed = 1, personality = "cassandra", pcs = [] } = {}) {
   const rng = makeRng(typeof seed === "string" ? hashSeed(seed) : seed);
@@ -80,9 +81,15 @@ export function stepDay(state) {
   const avgMood = aliveP.reduce((s, p) => s + mood(p), 0) / Math.max(1, aliveP.length);
   const avgHealth = aliveP.reduce((s, p) => s + p.needs.health, 0) / Math.max(1, aliveP.length);
 
+  // story-circle beat for this day (thread 1): tags the record for the narrator and,
+  // via beatThreatMul, leans the storyteller's incident odds toward the shape of the
+  // beat (rising into "unfamiliar"/"price", easing on "comfort"/"return").
+  const beat = beatForDate(isoDate);
+  const beatThreatMul = beatThreatMultiplier(beat);
+
   // storyteller deals incidents (dt lets a longer gap raise the odds)
   const incidents = storyteller.day({ world: state, leg, roster, day: state.day, isoDate, rng, dt,
-    provisions: state.provisions, daysAtSea, avgMood, avgHealth });
+    provisions: state.provisions, daysAtSea, avgMood, avgHealth, beat, beatThreatMul });
   for (const inc of incidents) { inc.date = isoDate; inc.incident = true; inc.pcInvolved = inc.actors?.some((a) => a.isPC); }
 
   // mental breaks (mood-driven, contagious — see breaks.js) and inspirations fire
@@ -114,7 +121,7 @@ export function stepDay(state) {
   const record = {
     day: state.day, date: isoDate, longDate: longDate(isoDate),
     leg: { place: leg.place, region: leg.region, phase: leg.phase, danger: leg.danger, lat: leg.lat, lon: leg.lng },
-    rawEvents, incidents, realEvents,
+    rawEvents, incidents, realEvents, beat,
     avgMood, avgHealth, provisions: state.provisions,
     aliveCount: aliveP.length, deaths: deaths.map((d) => ({ name: d.name, cause: d.causeOfDeath })),
     tension: storyteller.tension,

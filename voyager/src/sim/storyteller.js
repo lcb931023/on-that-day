@@ -284,7 +284,12 @@ export function makeStoryteller(personality = "cassandra") {
         const dangerF = 0.5 + c.leg.danger; // 0.5..1.5
         const tensionF = 0.7 + this.tension * 0.9;
         const threatMul = inc.threat ? p.threat * (1 - this.adaptation * 0.6) * wealthF * popIntent * cycleMul : cycleMul;
-        mtb = mtb / (dangerF * tensionF * threatMul * (0.8 + overdue * 0.5));
+        // story-circle bias (thread 1, optional): incidents press harder in beats like
+        // "unfamiliar"/"price" and ease off in "comfort"/"return" — see storycircle.js.
+        // Only threat incidents are biased; wonders/first-contact stay beat-neutral so
+        // beat 5 ("get what they wanted") isn't starved of its own texture.
+        const beatMul = inc.threat ? (c.beatThreatMul ?? 1) : 1;
+        mtb = mtb / (dangerF * tensionF * threatMul * beatMul * (0.8 + overdue * 0.5));
         mtb = Math.max(1.1, mtb);
         let pDay = 1 - Math.exp(-(c.dt || 1) / mtb); // gap between journal days raises the odds
         pDay += p.chaos * (c.rng() - 0.5) * 0.1; // personality chaos jitter

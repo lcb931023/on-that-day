@@ -1,4 +1,5 @@
 node_modules/
-output/*.html
+output/**/*.html
+output/session-*.json
 !output/.gitkeep
 .env
