@@ -17,6 +17,11 @@
 
 # Dependency directories
 frontend/node_modules
+__pycache__/
+*.pyc
+
+# Source ebook texts that build_data.py parses — not redistributable
+/diaries_txt
 
 # Build output
 frontend/dist
