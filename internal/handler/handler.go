@@ -23,9 +23,11 @@ func New(svc *service.Service, siteDir string) *Handler {
 
 // RegisterRoutes registers all routes on the provided mux.
 func (h *Handler) RegisterRoutes(mux *http.ServeMux) {
-	// Original frontend data paths (so the static site works unchanged).
+	// Flat-file data paths. The frontend reads these so the same build works
+	// here and as a static export on GitHub Pages.
 	mux.HandleFunc("/data/authors.json", h.Authors)
 	mux.HandleFunc("/data/days/", h.DayByFile)
+	mux.HandleFunc("/data/voyages/", h.VoyageByFile)
 
 	// API paths.
 	mux.HandleFunc("/healthz", h.Healthz)
@@ -70,9 +72,18 @@ func (h *Handler) DayByFile(w http.ResponseWriter, r *http.Request) {
 	h.serveDay(w, r, path)
 }
 
+// VoyageByFile serves a voyage via the flat-file /data/voyages/KEY.json path.
+func (h *Handler) VoyageByFile(w http.ResponseWriter, r *http.Request) {
+	key := strings.TrimPrefix(r.URL.Path, "/data/voyages/")
+	h.serveVoyage(w, r, strings.TrimSuffix(key, ".json"))
+}
+
 // Voyage serves the full chronological route for a voyage author.
 func (h *Handler) Voyage(w http.ResponseWriter, r *http.Request) {
-	key := strings.TrimPrefix(r.URL.Path, "/api/voyage/")
+	h.serveVoyage(w, r, strings.TrimPrefix(r.URL.Path, "/api/voyage/"))
+}
+
+func (h *Handler) serveVoyage(w http.ResponseWriter, r *http.Request, key string) {
 	if key == "" {
 		writeError(w, http.StatusBadRequest, "missing voyage key")
 		return

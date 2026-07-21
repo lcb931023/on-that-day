@@ -7,6 +7,9 @@ export default defineConfig(({ mode }) => {
   const apiTarget = env.VITE_API_TARGET || 'http://localhost:8000'
 
   return {
+    // GitHub Pages serves the app from a repo subpath; the Go server serves it
+    // from the root.
+    base: env.VITE_BASE || '/',
     plugins: [react()],
     server: {
       port: 5173,

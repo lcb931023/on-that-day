@@ -22,8 +22,9 @@ entry pinned to the ballpark named in its dateline).
 │   ├── server/          # Go HTTP API + 静态文件服务
 │   └── dbsync/          # 数据库初始化/同步工具
 ├── internal/            # Go 业务分层
-├── frontend/            # React + Vite 前端
-├── data/source/         # 原始 authors.json + days/*.json + voyages/*.json
+├── frontend/            # React + Vite 前端（服务端与 GitHub Pages 共用同一份）
+├── site/data/           # build_data.py 生成的 authors.json + days/*.json + voyages/*.json
+├── data/source/         # site/data/ 的镜像，供 Docker 镜像读取
 ├── Dockerfile           # 构建后端 + 前端单一镜像
 ├── docker-compose.yml   # 一键部署
 ├── entrypoint.sh        # 容器启动：首次同步数据并启动服务
@@ -122,6 +123,21 @@ SITE_DIR=frontend/dist go run ./cmd/server
 ```
 
 浏览器访问 `http://localhost:8080/`。
+
+## GitHub Pages
+
+`pages.yml` 构建同一份 React 前端，把 `site/data/` 一起打包后发布到
+<https://lcb931023.github.io/on-that-day/>。前端统一从 `data/authors.json`、
+`data/days/MM-DD.json`、`data/voyages/KEY.json` 读取数据：Pages 上是静态文件，
+带服务端时由 Go 提供同名路由，因此两个部署共用一套代码。
+
+本地按 Pages 的方式验证：
+
+```bash
+cd frontend
+VITE_BASE=/on-that-day/ npm run build
+cp -r ../site/data/. dist/data/
+```
 
 ## API
 

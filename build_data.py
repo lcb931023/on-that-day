@@ -6,6 +6,7 @@ as "delta")."""
 import html as htmllib
 import json
 import re
+import shutil
 from datetime import date, timedelta
 from pathlib import Path
 
@@ -13,6 +14,8 @@ BASE = Path(__file__).parent
 TXT = BASE / "diaries_txt"
 RAW = BASE / "raw"
 DATA_DIR = BASE / "site" / "data"
+SOURCE_DIR = BASE / "data" / "source"
+VOYAGES = SOURCE_DIR / "voyages"
 FALLBACK_WINDOW = 10
 
 MONTHS = {m[:3].lower(): i + 1 for i, m in enumerate(
@@ -1107,11 +1110,37 @@ def write_shards(entries):
         shard.write_text(json.dumps({"entries": picked}, ensure_ascii=False))
         total += shard.stat().st_size
         day += timedelta(days=1)
+    authors = dict(AUTHORS)
+    authors.update(voyage_authors())
     (DATA_DIR / "authors.json").write_text(
-        json.dumps(AUTHORS, ensure_ascii=False))
+        json.dumps(authors, ensure_ascii=False))
     print(f"wrote {DATA_DIR}/authors.json and 366 day shards "
           f"({total // 1024 // 1024} MB total, "
           f"~{total // 366 // 1024} KB each)")
+    mirror_to_source()
+
+
+def voyage_authors():
+    """Voyage routes are hand-built rather than parsed, so they only need to
+    contribute their authors here; the JSON itself is served as-is."""
+    authors = {}
+    for src in sorted(VOYAGES.glob("*.json")):
+        author = json.loads(src.read_text())["author"]
+        authors[author["key"]] = {k: v for k, v in author.items() if k != "key"}
+    return authors
+
+
+def mirror_to_source():
+    """The Docker image reads data/source/ while GitHub Pages reads site/data/.
+    Keep them identical so the two deploys cannot drift."""
+    for name in ("authors.json", "days"):
+        src, dst = DATA_DIR / name, SOURCE_DIR / name
+        if dst.is_dir():
+            shutil.rmtree(dst)
+        elif dst.exists():
+            dst.unlink()
+        (shutil.copytree if src.is_dir() else shutil.copy2)(src, dst)
+    print(f"mirrored {DATA_DIR} into {SOURCE_DIR}")
 
 
 def main():

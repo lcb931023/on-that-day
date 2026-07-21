@@ -22,9 +22,31 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      # Pages serves the app from /<repo>/ and has no API behind it, so the
+      # build reads the day shards as flat files bundled alongside it.
+      - name: Build frontend
+        working-directory: frontend
+        env:
+          VITE_BASE: /${{ github.event.repository.name }}/
+        run: |
+          npm ci
+          npm run build
+
+      - name: Bundle the data with the build
+        run: |
+          cp -r site/data/. frontend/dist/data/
+          cp -r data/source/voyages frontend/dist/data/voyages
+
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: site
+          path: frontend/dist
       - id: deployment
         uses: actions/deploy-pages@v4

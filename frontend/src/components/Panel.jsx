@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { COLORS, MONTH_NAMES, VOYAGE_COLOR } from "../constants";
-import { fetchOnThisDay } from "../api";
+import { dataUrl, fetchOnThisDay } from "../api";
 import { ageOn, fmtDate, yearsAgo, esc } from "../utils";
 
 const OTD_WINDOW_DAYS = 14;
@@ -54,7 +54,7 @@ export default function Panel({ group, entryIndex, author, target, onClose, onSe
           {!imgError && (
             <img
               className="pn-cover"
-              src={`/data/${entry.a}.jpg`}
+              src={dataUrl(`${entry.a}.jpg`)}
               alt=""
               onError={() => setImgError(true)}
             />
