@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { COLORS } from "../constants";
+import { COLORS, VOYAGE_COLOR } from "../constants";
 
 export default function Legend({ authors, groups, onFlyTo }) {
   const viewportRef = useRef(null);
@@ -74,7 +74,7 @@ export default function Legend({ authors, groups, onFlyTo }) {
           <button
             key={key}
             className="legend-chip"
-            style={{ "--c": COLORS[key] }}
+            style={{ "--c": COLORS[key] || VOYAGE_COLOR }}
             onClick={() => onFlyTo(idxs)}
           >
             <span className="dot"></span>

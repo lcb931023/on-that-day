@@ -2,7 +2,7 @@ import { useEffect, forwardRef, useImperativeHandle, useRef } from "react";
 import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
-import { COLORS, INITIALS } from "../constants";
+import { COLORS, INITIALS, VOYAGE_COLOR, SHIP_ICON } from "../constants";
 import { fmtDate, ageOn, yearsAgo, esc } from "../utils";
 import VoyageLayer from "./VoyageLayer";
 
@@ -15,8 +15,8 @@ function minZoomForMapWidth(width) {
 
 function createSealIcon(authorKey, count) {
   const html = `
-    <div class="seal" style="--c:${COLORS[authorKey]}">
-      ${INITIALS[authorKey]}${count > 1 ? `<span class="seal-count">${count}</span>` : ""}
+    <div class="seal" style="--c:${COLORS[authorKey] || VOYAGE_COLOR}">
+      ${INITIALS[authorKey] || SHIP_ICON}${count > 1 ? `<span class="seal-count">${count}</span>` : ""}
     </div>
   `;
   return L.divIcon({
@@ -87,7 +87,7 @@ function EntryMarkers({ groups, authors, onOpenPanel }) {
             icon={createSealIcon(a, group.length)}
           >
             <Popup maxWidth={300} autoPanPaddingTopLeft={[24, 96]}>
-              <div style={{ "--c": COLORS[a] }}>
+              <div style={{ "--c": COLORS[a] || VOYAGE_COLOR }}>
                 <div className="pp-author">{author.name}</div>
                 <div className="pp-place">{place}</div>
                 {group.map((e, ei) => {
