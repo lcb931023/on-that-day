@@ -22,6 +22,18 @@ export function esc(s) {
     .replace(/>/g, "&gt;");
 }
 
+const PLACE_MAX_CHARS = 28;
+
+// Some place names are sentence fragments left over from parsing a journal, and
+// a long one stretches its legend chip across the whole bar.
+export function shortPlace(place) {
+  const name = place.split(/[,，]/).pop().trim();
+  if (name.length <= PLACE_MAX_CHARS) return name;
+  const cut = name.slice(0, PLACE_MAX_CHARS);
+  const lastSpace = cut.lastIndexOf(" ");
+  return `${(lastSpace > 0 ? cut.slice(0, lastSpace) : cut).trimEnd()}…`;
+}
+
 export function groupByPlace(picked) {
   const groups = new Map();
   for (const e of picked) {

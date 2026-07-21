@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { COLORS, VOYAGE_COLOR } from "../constants";
+import { shortPlace } from "../utils";
 
 export default function Legend({ authors, groups, onFlyTo }) {
   const viewportRef = useRef(null);
@@ -20,7 +21,7 @@ export default function Legend({ authors, groups, onFlyTo }) {
         if (!author) return null;
         const place =
           idxs.length === 1
-            ? groups[idxs[0]][0].place.split(/[,，]/).pop().trim()
+            ? shortPlace(groups[idxs[0]][0].place)
             : `${idxs.length} places`;
         return { key, idxs, author, place };
       })
