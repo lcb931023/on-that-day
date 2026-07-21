@@ -115,6 +115,13 @@ AUTHORS = {
                 "the voyage's route, from Brazil and Patagonia round to the "
                 "Galapagos, Tahiti, Australia and home.",
     },
+    "bouton": {
+        "name": "Jim Bouton", "born": "1939-03-08",
+        "source": "Ball Four (ed. Leonard Shecter, 1970)",
+        "note": "A season with the Seattle Pilots, then the Houston Astros, "
+                "spring through October 1969; each entry is pinned to the "
+                "ballpark named in its dateline.",
+    },
 }
 
 FILES = {
@@ -130,6 +137,7 @@ FILES = {
     "hushi": TXT / "胡适/胡适留学日记全集套装17册 (胡适经典全集)/胡适留学日记全集套装17册 (胡适经典全集) - 胡适.txt",
     "einstein": TXT / "阿尔伯特·爱因斯坦 & 泽夫·罗森克兰茨/爱因斯坦旅行日记（作为世俗游客的爱因斯坦，他的所见所思与你我的异同！）/爱因斯坦旅行日记（作为世俗游客的爱因斯坦，他的所见所思与你我的异同！） - 阿尔伯特·爱因斯坦 & 泽夫·罗森克兰茨.txt",
     "darwin": TXT / "Darwin, Charles/Naturalist's Voyage Round the World, A/Naturalist's Voyage Round the World, A - Charles Darwin.txt",
+    "bouton": TXT / "Bouton, Jim/Ball Four (RosettaBooks Sports Classics)/Ball Four (RosettaBooks Sports Classics) - Bouton, Jim.txt",
 }
 
 
@@ -439,11 +447,56 @@ def darwin_place(y, m, d):
     return place
 
 
+# "Ball Four" datelines each entry with the city the club is playing in, so the
+# season can be followed park by park. Home parks are pinned to the ballpark,
+# road cities to the park the Pilots or Astros played in that year.
+BOUTON_DATELINES = {
+    "Tempe": ("Tempe Diablo Stadium, Arizona", 33.3906, -111.9553),
+    "Mesa": ("Mesa, Arizona", 33.4152, -111.8315),
+    "Scottsdale": ("Scottsdale, Arizona", 33.4942, -111.9261),
+    "Phoenix": ("Phoenix, Arizona", 33.4484, -112.0740),
+    "Tucson": ("Tucson, Arizona", 32.2226, -110.9747),
+    "Yuma": ("Yuma, Arizona", 32.6927, -114.6277),
+    "Holtville": ("Holtville, California", 32.8112, -115.3800),
+    "Palm Springs": ("Palm Springs, California", 33.8303, -116.5453),
+    "San Diego": ("San Diego, California", 32.7157, -117.1611),
+    "Anaheim": ("Anaheim Stadium, California", 33.8003, -117.8827),
+    "Seattle": ("Sicks' Stadium, Seattle", 47.5609, -122.3214),
+    "Vancouver": ("Capilano Stadium, Vancouver", 49.2646, -123.1387),
+    "Tacoma": ("Tacoma, Washington", 47.2529, -122.4443),
+    "Oakland": ("Oakland Coliseum, California", 37.7516, -122.2005),
+    "San Francisco": ("Candlestick Park, San Francisco", 37.7135, -122.3861),
+    "Los Angeles": ("Dodger Stadium, Los Angeles", 34.0739, -118.2400),
+    "Honolulu": ("Honolulu, Hawaii", 21.3069, -157.8583),
+    "Minneapolis": ("Metropolitan Stadium, Minnesota", 44.8560, -93.2274),
+    "Kansas City": ("Municipal Stadium, Kansas City", 39.0900, -94.5583),
+    "Chicago": ("Comiskey Park, Chicago", 41.8300, -87.6339),
+    "Milwaukee": ("County Stadium, Milwaukee", 43.0280, -87.9712),
+    "Detroit": ("Tiger Stadium, Detroit", 42.3320, -83.0685),
+    "Cleveland": ("Municipal Stadium, Cleveland", 41.5061, -81.6995),
+    "Boston": ("Fenway Park, Boston", 42.3467, -71.0972),
+    "New York": ("Yankee Stadium, New York", 40.8296, -73.9262),
+    "Baltimore": ("Memorial Stadium, Baltimore", 39.2980, -76.6224),
+    "Baltimore-St. Louis": ("Memorial Stadium, Baltimore", 39.2980, -76.6224),
+    "Washington": ("RFK Stadium, Washington", 38.8897, -76.9722),
+    "Atlanta": ("Atlanta Stadium, Georgia", 33.7345, -84.3897),
+    "Cincinnati": ("Crosley Field, Cincinnati", 39.0975, -84.5083),
+    "Houston": ("The Astrodome, Houston", 29.6869, -95.4108),
+}
+
+
+def bouton_place(y, m, d):
+    # The 1968 entries predate spring training; Bouton was home in Wyckoff, New
+    # Jersey. Everything from 26 February 1969 on carries a dateline.
+    return ("Wyckoff, New Jersey", 40.9976, -74.1718)
+
+
 PLACE_FN = {"woolf": woolf_place, "kafka": kafka_place, "frank": frank_place,
             "pepys": pepys_place, "eno": eno_place, "hillesum": hillesum_place,
             "mukhina": mukhina_place,
             "luxun": luxun_place, "jixianlin": jixianlin_place, "hushi": hushi_place,
-            "einstein": einstein_place, "darwin": darwin_place}
+            "einstein": einstein_place, "darwin": darwin_place,
+            "bouton": bouton_place}
 
 
 # ---------- Parsers (each returns [{y, m, d, text, (place)}]) ----------
@@ -962,6 +1015,56 @@ def parse_darwin(lines):
     return out
 
 
+def parse_bouton(lines):
+    # "Ball Four" uses standalone uppercase month headings followed by a
+    # standalone day number; the diary runs from November 1968 through October
+    # 1969. Stop before the retrospective addenda.
+    month_hdr = re.compile(r"^(JANUARY|FEBRUARY|MARCH|APRIL|MAY|JUNE|JULY|"
+                           r"AUGUST|SEPTEMBER|OCTOBER|NOVEMBER|DECEMBER)$")
+    day_hdr = re.compile(r"^(\d{1,2})$")
+    stop = re.compile(r"^(WINTER,\s*1969/70|Statistics|TELL YOUR STATISTICS|"
+                      r"Ball Five)")
+    year = 1968
+    month = None
+    in_diary = False
+    current, out = None, []
+    for line in lines:
+        s = line.strip()
+        if month_hdr.match(s):
+            in_diary = True
+            new_month = MONTHS[s[:3].lower()]
+            if month and new_month < month:
+                year += 1
+            month = new_month
+            continue
+        if not in_diary:
+            continue
+        if stop.match(s):
+            break
+        m = day_hdr.match(s)
+        if m and month:
+            if current:
+                out.append(current)
+            current = {"y": year, "m": month, "d": int(m.group(1)), "text": ""}
+            continue
+        if current:
+            current["text"] += line
+    if current:
+        out.append(current)
+
+    # A dateline names the city and holds until the next one, so carry the last
+    # one forward; entries before the first dateline fall back to bouton_place.
+    place = None
+    for e in out:
+        head, sep, rest = e["text"].lstrip().partition("\n")
+        if sep and head.strip() in BOUTON_DATELINES:
+            place = BOUTON_DATELINES[head.strip()]
+            e["text"] = rest
+        if place:
+            e["place"] = place
+    return out
+
+
 # ---------- Build ----------
 
 def valid_date(y, m, d):
@@ -1029,6 +1132,7 @@ def main():
         "hushi": parse_hushi(FILES["hushi"].read_text().splitlines(keepends=True)),
         "einstein": parse_einstein(FILES["einstein"].read_text().splitlines(keepends=True)),
         "darwin": parse_darwin(FILES["darwin"].read_text().splitlines(keepends=True)),
+        "bouton": parse_bouton(FILES["bouton"].read_text().splitlines(keepends=True)),
     }
     entries, seen = [], {}
     for author, items in parsed.items():

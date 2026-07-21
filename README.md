@@ -8,7 +8,9 @@ per-entry travel locations), Etty Hillesum (*An Interrupted Life* — only the
 ~11 explicitly dated entries), Lena Mukhina (*The Diary of Lena Mukhina*,
 a Leningrad schoolgirl's siege diary, 1941–42), 鲁迅 (《鲁迅日记》from Wikisource, 1912–1931,
 following his moves Beijing → 厦门 → 广州 → 上海), 季羡林 (《清华园日记》
-1932–34), and 胡适 (《胡适留学日记》1911–17, Cornell then Columbia).
+1932–34), 胡适 (《胡适留学日记》1911–17, Cornell then Columbia), and
+Jim Bouton (*Ball Four*, the 1969 Seattle Pilots/Houston Astros season, each
+entry pinned to the ballpark named in its dateline).
 
 工程化 Go 后端 + React 前端，替代原 Python 生成的静态 JSON，将日记数据持久化到 SQLite 并通过 HTTP API 提供。支持 Docker 一键部署。
 
